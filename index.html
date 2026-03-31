@@ -738,13 +738,13 @@
     <button class="filter-btn active">Todos</button>
     <button class="filter-btn">Escenas</button>
     <button class="filter-btn">Assets</button>
-    <button class="filter-btn">Personajes (proximamente)</button>
+    <button class="filter-btn">Personajes</button>
     <button class="filter-btn">Estudios</button>
   </div>
 
   <div class="works-grid">
 
-    <div class="work-card">
+    <div class="work-card" data-cat="escenas">
   <img src="Escenario-cuarto.png" style="width:100%;display:block;">
       </div>
       <div class="work-overlay">
@@ -754,7 +754,7 @@
     </div>
 
     <!-- CARD 2: Isla -->
-    <div class="work-card">
+    <div class="work-card" data-cat="escenas">
       <img src="Isla-de-helado.png" style="width:100%;display:block;">
       </div>
       <div class="work-overlay">
@@ -764,7 +764,7 @@
     </div>
 
     <!-- CARD 3: Personaje -->
-    <div class="work-card">
+    <div class="work-card" data-cat="personajes">
       <div class="img-placeholder" style="height:300px">
         <span>🗡️</span>
         [Imagen: Personaje anime]
@@ -776,7 +776,7 @@
     </div>
 
     <!-- CARD 4: Sushi -->
-    <div class="work-card">
+    <div class="work-card" data-cat="assets">
       <div class="img-placeholder" style="height:220px">
         <span>🍣</span>
         [Imagen: Sushi voxel]
@@ -788,7 +788,7 @@
     </div>
 
     <!-- CARD 5: Árbol -->
-    <div class="work-card">
+    <div class="work-card" data-cat="assets">
       <img src="ARBOL-NO-BUG.png" style="width:100%;display:block;">
       </div>
       <div class="work-overlay">
@@ -798,7 +798,7 @@
     </div>
 
     <!-- CARD 6: Parque -->
-    <div class="work-card">
+    <div class="work-card" data-cat="escenas">
       <div class="img-placeholder" style="height:200px">
         <span>🌙</span>
         [Imagen: Parque nocturno]
@@ -810,7 +810,7 @@
     </div>
 
     <!-- CARD 7: Puentes -->
-    <div class="work-card">
+    <div class="work-card" data-cat="assets">
       <div class="img-placeholder" style="height:180px">
         <span>🌉</span>
         [Imagen: Puentes de madera]
@@ -822,7 +822,7 @@
     </div>
 
     <!-- CARD 8: Escritorio -->
-    <div class="work-card">
+    <div class="work-card" dat-cat="assets">
       <div class="img-placeholder" style="height:200px">
         <span>💻</span>
         [Imagen: Escritorio]
@@ -1031,18 +1031,21 @@
 
 <!-- FOOTER -->
 <footer>
-  <span>© 2026 Tu Nombre · Todos los derechos reservados</span>
+  <span>© 2026 Uasna · Todos los derechos reservados</span>
   <span>Hecho con Blender + pasión 🧡</span>
 </footer>
 
 <script>
-  // Filter buttons (visual only — para funcionalidad real necesitarías data-tags en las cards)
   document.querySelectorAll('.filter-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const cat = btn.textContent.toLowerCase().trim();
+    document.querySelectorAll('.work-card').forEach(card => {
+      card.style.display = (cat === 'todos' || card.dataset.cat === cat) ? 'block' : 'none';
     });
   });
+});
 
   // Smooth nav highlight
   const sections = document.querySelectorAll('section[id]');
