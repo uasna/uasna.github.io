@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cálculo Trainer · Eru</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a24;
+    --border: #252532;
+    --accent: #43d9ad;
+    --accent2: #ff6b6b;
+    --accent3: #7c6aff;
+    --accent4: #ffc94a;
+    --text: #e8e8f0;
+    --muted: #5a5a70;
+    --font-head: 'Syne', sans-serif;
+    --font-mono: 'Space Mono', monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-head); min-height: 100vh; }
+
+  .hero { padding: 1.5rem 1.25rem 0; }
+  .hero-tag { font-family: var(--font-mono); font-size: 0.6rem; color: var(--accent); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 0.3rem; }
+  .hero h1 { font-size: 1.7rem; font-weight: 800; letter-spacing: -0.03em; }
+  .hero h1 span { color: var(--accent); }
+  .hero-sub { font-family: var(--font-mono); font-size: 0.65rem; color: var(--muted); margin-top: 0.3rem; }
+
+  /* API KEY */
+  .api-section { margin: 1rem 1.25rem; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 0.85rem; }
+  .api-label { font-family: var(--font-mono); font-size: 0.6rem; color: var(--muted); margin-bottom: 0.4rem; letter-spacing: 0.1em; text-transform: uppercase; }
+  .api-row { display: flex; gap: 0.5rem; }
+  .api-input { flex: 1; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 0.5rem 0.75rem; font-family: var(--font-mono); font-size: 0.7rem; color: var(--text); outline: none; }
+  .api-input:focus { border-color: var(--accent); }
+  .api-btn { background: var(--accent); color: #000; font-family: var(--font-mono); font-size: 0.68rem; font-weight: 700; border: none; border-radius: 6px; padding: 0.5rem 0.85rem; cursor: pointer; white-space: nowrap; }
+  .api-status { font-family: var(--font-mono); font-size: 0.6rem; margin-top: 0.4rem; }
+  .api-status.ok { color: var(--accent); }
+  .api-status.err { color: var(--accent2); }
+
+  /* MAIN PANEL */
+  .main { padding: 1rem 1.25rem 2rem; }
+
+  /* TOPIC SELECTOR */
+  .sec-title { font-size: 0.6rem; font-family: var(--font-mono); letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.65rem; display: flex; align-items: center; gap: 0.5rem; }
+  .sec-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  .topic-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem; }
+  .topic-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.7rem 0.4rem; text-align: center; cursor: pointer; transition: all 0.2s; font-family: var(--font-head); font-size: 0.75rem; font-weight: 700; color: var(--muted); }
+  .topic-btn:hover { border-color: var(--accent); color: var(--text); }
+  .topic-btn.active { background: rgba(67,217,173,0.1); border-color: var(--accent); color: var(--accent); }
+  .topic-emoji { font-size: 1.2rem; display: block; margin-bottom: 0.3rem; }
+
+  .diff-row { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+  .diff-btn { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.5rem; font-family: var(--font-mono); font-size: 0.65rem; color: var(--muted); cursor: pointer; text-align: center; transition: all 0.2s; }
+  .diff-btn.active { color: var(--accent4); border-color: var(--accent4); background: rgba(255,201,74,0.08); }
+
+  .gen-btn { width: 100%; background: var(--accent); color: #000; font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700; border: none; border-radius: 8px; padding: 0.85rem; cursor: pointer; letter-spacing: 0.05em; margin-bottom: 1rem; transition: opacity 0.2s; }
+  .gen-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* EXERCISE CARD */
+  .ex-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; margin-bottom: 0.75rem; display: none; }
+  .ex-card.visible { display: block; }
+  .ex-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.65rem; }
+  .ex-badge { font-family: var(--font-mono); font-size: 0.6rem; padding: 0.2rem 0.55rem; border-radius: 4px; }
+  .ex-problema { font-size: 1rem; font-weight: 700; line-height: 1.5; margin-bottom: 0.75rem; font-family: var(--font-mono); color: var(--accent4); }
+  .ex-hint { font-size: 0.75rem; color: var(--muted); line-height: 1.5; font-family: var(--font-mono); }
+
+  /* ANSWER */
+  .ans-label { font-family: var(--font-mono); font-size: 0.6rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.4rem; }
+  .ans-input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem; font-family: var(--font-mono); font-size: 0.85rem; color: var(--text); outline: none; resize: none; min-height: 70px; }
+  .ans-input:focus { border-color: var(--accent3); }
+  .check-btn { width: 100%; background: var(--accent3); color: white; font-family: var(--font-mono); font-size: 0.78rem; font-weight: 700; border: none; border-radius: 8px; padding: 0.8rem; cursor: pointer; margin-top: 0.6rem; transition: opacity 0.2s; letter-spacing: 0.05em; }
+  .check-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* FEEDBACK */
+  .feedback-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; margin-top: 0.75rem; display: none; }
+  .feedback-card.visible { display: block; animation: fadeUp 0.3s ease; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+  .feedback-result { font-size: 1rem; font-weight: 800; margin-bottom: 0.75rem; }
+  .feedback-result.correct { color: var(--accent); }
+  .feedback-result.wrong { color: var(--accent2); }
+  .feedback-result.partial { color: var(--accent4); }
+  .feedback-body { font-size: 0.8rem; line-height: 1.7; color: #c0c0d0; white-space: pre-wrap; font-family: var(--font-mono); }
+
+  /* LOADING */
+  .loading { display: none; text-align: center; padding: 2rem; }
+  .loading.visible { display: block; }
+  .spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 0.75rem; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); }
+
+  /* SCORE BAR */
+  .score-row { display: flex; justify-content: space-between; margin-bottom: 0.5rem; }
+  .score-stat { text-align: center; }
+  .score-val { font-family: var(--font-mono); font-size: 1.1rem; font-weight: 700; }
+  .score-label { font-family: var(--font-mono); font-size: 0.58rem; color: var(--muted); }
+  .score-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 0.85rem; margin-bottom: 1rem; }
+
+  .next-btn { width: 100%; background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; border-radius: 8px; padding: 0.75rem; cursor: pointer; margin-top: 0.6rem; transition: all 0.2s; }
+  .next-btn:hover { border-color: var(--accent); color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-tag">// cálculo trainer</div>
+  <h1>Cálculo <span>AI</span></h1>
+  <div class="hero-sub">ejercicios random · corrección inteligente · procedimiento completo</div>
+</div>
+
+<div class="api-section">
+  <div class="api-label">🔑 API Key de Anthropic</div>
+  <div class="api-row">
+    <input type="password" class="api-input" id="apiKey" placeholder="sk-ant-..." />
+    <button class="api-btn" onclick="saveKey()">Guardar</button>
+  </div>
+  <div class="api-status" id="apiStatus"></div>
+</div>
+
+<div class="main">
+
+  <div class="sec-title">Sesión</div>
+  <div class="score-card">
+    <div class="score-row">
+      <div class="score-stat"><div class="score-val" id="scoreCorrect" style="color:var(--accent)">0</div><div class="score-label">CORRECTAS</div></div>
+      <div class="score-stat"><div class="score-val" id="scoreWrong" style="color:var(--accent2)">0</div><div class="score-label">INCORRECTAS</div></div>
+      <div class="score-stat"><div class="score-val" id="scoreTotal" style="color:var(--accent4)">0</div><div class="score-label">TOTAL</div></div>
+    </div>
+  </div>
+
+  <div class="sec-title">Tema</div>
+  <div class="topic-grid">
+    <div class="topic-btn active" onclick="setTopic('limites', this)"><span class="topic-emoji">∞</span>Límites</div>
+    <div class="topic-btn" onclick="setTopic('derivadas', this)"><span class="topic-emoji">d/dx</span>Derivadas</div>
+    <div class="topic-btn" onclick="setTopic('integrales', this)"><span class="topic-emoji">∫</span>Integrales</div>
+  </div>
+
+  <div class="sec-title">Dificultad</div>
+  <div class="diff-row">
+    <div class="diff-btn active" onclick="setDiff('basico', this)">Básico</div>
+    <div class="diff-btn" onclick="setDiff('intermedio', this)">Intermedio</div>
+    <div class="diff-btn" onclick="setDiff('avanzado', this)">Avanzado</div>
+  </div>
+
+  <button class="gen-btn" id="genBtn" onclick="generateExercise()">⚡ Generar ejercicio</button>
+
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <div class="loading-text">generando ejercicio...</div>
+  </div>
+
+  <div class="ex-card" id="exCard">
+    <div class="ex-top">
+      <span class="ex-badge" id="exBadge" style="background:rgba(67,217,173,0.1);color:var(--accent)"></span>
+      <span style="font-family:var(--font-mono);font-size:0.6rem;color:var(--muted)" id="exDiff"></span>
+    </div>
+    <div class="ex-problema" id="exProblema"></div>
+    <div class="ex-hint" id="exHint"></div>
+  </div>
+
+  <div id="ansSection" style="display:none">
+    <div class="ans-label">Tu respuesta</div>
+    <textarea class="ans-input" id="ansInput" placeholder="Escribe tu respuesta aquí... (no necesita ser perfecta, escribe lo que puedas)"></textarea>
+    <button class="check-btn" id="checkBtn" onclick="checkAnswer()">🔍 Verificar respuesta</button>
+  </div>
+
+  <div class="loading" id="loadingCheck">
+    <div class="spinner"></div>
+    <div class="loading-text">analizando tu respuesta...</div>
+  </div>
+
+  <div class="feedback-card" id="feedbackCard">
+    <div class="feedback-result" id="feedbackResult"></div>
+    <div class="feedback-body" id="feedbackBody"></div>
+    <button class="next-btn" onclick="nextExercise()">➡️ Siguiente ejercicio</button>
+  </div>
+
+</div>
+
+<script>
+let topic = 'limites';
+let diff = 'basico';
+let currentExercise = '';
+let score = { correct: 0, wrong: 0, total: 0 };
+
+function saveKey() {
+  const key = document.getElementById('apiKey').value.trim();
+  if(!key.startsWith('sk-ant-')) {
+    document.getElementById('apiStatus').textContent = '❌ La key debe empezar con sk-ant-';
+    document.getElementById('apiStatus').className = 'api-status err';
+    return;
+  }
+  localStorage.setItem('eruApiKey', key);
+  document.getElementById('apiStatus').textContent = '✅ Key guardada';
+  document.getElementById('apiStatus').className = 'api-status ok';
+}
+
+function getKey() { return localStorage.getItem('eruApiKey') || document.getElementById('apiKey').value.trim(); }
+
+function setTopic(t, el) {
+  topic = t;
+  document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function setDiff(d, el) {
+  diff = d;
+  document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function updateScore() {
+  document.getElementById('scoreCorrect').textContent = score.correct;
+  document.getElementById('scoreWrong').textContent = score.wrong;
+  document.getElementById('scoreTotal').textContent = score.total;
+}
+
+async function callClaude(prompt, onLoading, offLoading) {
+  const key = getKey();
+  if(!key) { alert('Primero guardá tu API key'); return null; }
+  onLoading();
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    offLoading();
+    if(data.error) { alert('Error: ' + data.error.message); return null; }
+    return data.content[0].text;
+  } catch(e) {
+    offLoading();
+    alert('Error de conexión: ' + e.message);
+    return null;
+  }
+}
+
+async function generateExercise() {
+  const topicNames = { limites: 'límites', derivadas: 'derivadas', integrales: 'integrales' };
+  const prompt = `Eres un profesor de Cálculo 1. Genera UN ejercicio de ${topicNames[topic]} de nivel ${diff} para un estudiante universitario latinoamericano.
+
+FORMATO EXACTO (responde solo esto, sin explicaciones extra):
+EJERCICIO: [el problema matemático aquí, usando notación clara como f(x) = ..., lim x->a, dy/dx, etc.]
+PISTA: [una pista corta de 1-2 líneas sobre qué técnica usar, sin dar la respuesta]
+
+Genera el ejercicio ahora:`;
+
+  const result = await callClaude(prompt,
+    () => { document.getElementById('loading').classList.add('visible'); document.getElementById('genBtn').disabled = true; },
+    () => { document.getElementById('loading').classList.remove('visible'); document.getElementById('genBtn').disabled = false; }
+  );
+  if(!result) return;
+
+  const ejercicioMatch = result.match(/EJERCICIO:\s*(.+?)(?=PISTA:|$)/s);
+  const pistaMatch = result.match(/PISTA:\s*(.+)/s);
+
+  currentExercise = ejercicioMatch ? ejercicioMatch[1].trim() : result;
+  const pista = pistaMatch ? pistaMatch[1].trim() : '';
+
+  const badges = { limites: '∞ Límites', derivadas: 'd/dx Derivadas', integrales: '∫ Integrales' };
+  document.getElementById('exBadge').textContent = badges[topic];
+  document.getElementById('exDiff').textContent = diff.toUpperCase();
+  document.getElementById('exProblema').textContent = currentExercise;
+  document.getElementById('exHint').textContent = pista ? '💡 ' + pista : '';
+  document.getElementById('exCard').classList.add('visible');
+  document.getElementById('ansSection').style.display = 'block';
+  document.getElementById('ansInput').value = '';
+  document.getElementById('feedbackCard').classList.remove('visible');
+}
+
+async function checkAnswer() {
+  const answer = document.getElementById('ansInput').value.trim();
+  if(!answer) { alert('Escribe algo primero'); return; }
+
+  const prompt = `Eres un profesor de Cálculo 1 amigable y paciente. El estudiante resolvió el siguiente ejercicio:
+
+EJERCICIO: ${currentExercise}
+RESPUESTA DEL ESTUDIANTE: ${answer}
+
+Evalúa su respuesta siguiendo este formato exacto:
+
+RESULTADO: [CORRECTO / INCORRECTO / PARCIALMENTE CORRECTO]
+
+EVALUACIÓN: [2-3 oraciones evaluando qué hizo bien y qué está mal]
+
+PROCEDIMIENTO CORRECTO:
+[El procedimiento paso a paso completo y correcto, numerado, explicando cada paso como si fuera un profesor paciente]
+
+CONSEJO: [Un consejo específico para que recuerde esta técnica en el futuro]`;
+
+  const result = await callClaude(prompt,
+    () => { document.getElementById('loadingCheck').classList.add('visible'); document.getElementById('checkBtn').disabled = true; document.getElementById('ansSection').style.display = 'none'; },
+    () => { document.getElementById('loadingCheck').classList.remove('visible'); document.getElementById('checkBtn').disabled = false; }
+  );
+  if(!result) { document.getElementById('ansSection').style.display = 'block'; return; }
+
+  const resultMatch = result.match(/RESULTADO:\s*(.+)/);
+  const resultText = resultMatch ? resultMatch[1].trim().toUpperCase() : '';
+
+  const feedbackResult = document.getElementById('feedbackResult');
+  if(resultText.includes('CORRECTO') && !resultText.includes('PARCIAL')) {
+    feedbackResult.textContent = '✅ ¡Correcto!';
+    feedbackResult.className = 'feedback-result correct';
+    score.correct++;
+  } else if(resultText.includes('PARCIAL')) {
+    feedbackResult.textContent = '🟡 Parcialmente correcto';
+    feedbackResult.className = 'feedback-result partial';
+    score.wrong++;
+  } else {
+    feedbackResult.textContent = '❌ Incorrecto';
+    feedbackResult.className = 'feedback-result wrong';
+    score.wrong++;
+  }
+  score.total++;
+
+  const bodyText = result.replace(/RESULTADO:.*\n?/, '').trim();
+  document.getElementById('feedbackBody').textContent = bodyText;
+  document.getElementById('feedbackCard').classList.add('visible');
+  updateScore();
+}
+
+function nextExercise() {
+  document.getElementById('exCard').classList.remove('visible');
+  document.getElementById('ansSection').style.display = 'none';
+  document.getElementById('feedbackCard').classList.remove('visible');
+  document.getElementById('ansInput').value = '';
+  generateExercise();
+}
+
+// Load saved key
+const savedKey = localStorage.getItem('eruApiKey');
+if(savedKey) {
+  document.getElementById('apiKey').value = savedKey;
+  document.getElementById('apiStatus').textContent = '✅ Key cargada';
+  document.getElementById('apiStatus').className = 'api-status ok';
+}
+</script>
+</body>
+</html>

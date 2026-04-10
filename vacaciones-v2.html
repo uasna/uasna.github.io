@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vacaciones · Eru</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0f;
+    --surface: #141417;
+    --surface2: #1c1c21;
+    --border: #2a2a32;
+    --accent: #7c6aff;
+    --accent2: #ff6b6b;
+    --accent3: #43d9ad;
+    --accent4: #ffc94a;
+    --text: #e8e8f0;
+    --muted: #6b6b7e;
+    --font-head: 'Syne', sans-serif;
+    --font-mono: 'Space Mono', monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-head); min-height: 100vh; overflow-x: hidden; }
+
+  /* XP BAR HEADER */
+  .xp-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0.85rem 1.25rem;
+    position: sticky;
+    top: 0;
+    z-index: 200;
+  }
+  .xp-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+  .level-badge {
+    background: var(--accent);
+    color: white;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 0.25rem 0.6rem;
+    border-radius: 5px;
+  }
+  .xp-nums {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--muted);
+  }
+  .xp-nums span { color: var(--accent4); }
+  .streak-chip {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--accent2);
+  }
+  .xp-bar-bg {
+    height: 5px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .xp-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent3));
+    border-radius: 3px;
+    transition: width 0.6s cubic-bezier(.4,0,.2,1);
+  }
+
+  /* HERO */
+  .hero {
+    padding: 1.5rem 1.25rem 1rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 220px; height: 220px;
+    background: radial-gradient(circle, rgba(124,106,255,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-tag { font-family: var(--font-mono); font-size: 0.62rem; color: var(--accent); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 0.4rem; }
+  .hero h1 { font-size: 1.8rem; font-weight: 800; line-height: 1.1; letter-spacing: -0.03em; }
+  .hero h1 span { color: var(--accent); }
+  .hero-sub { font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); margin-top: 0.4rem; }
+  .dates-row { display: flex; gap: 0.6rem; margin-top: 0.75rem; flex-wrap: wrap; }
+  .date-chip { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 0.35rem 0.65rem; font-family: var(--font-mono); font-size: 0.65rem; color: var(--accent3); }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--accent);
+    color: white;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    z-index: 999;
+    transition: transform 0.3s ease;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* TABS */
+  .tab-bar {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tab-bar::-webkit-scrollbar { display: none; }
+  .tab { flex: none; padding: 0.8rem 1rem; font-family: var(--font-head); font-size: 0.75rem; font-weight: 600; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.2s; background: none; border-top: none; border-left: none; border-right: none; }
+  .tab.active { color: var(--text); border-bottom-color: var(--accent); }
+  .tab:hover:not(.active) { color: var(--text); }
+
+  /* PANELS */
+  .panel { display: none; padding: 1.25rem; animation: fadeUp 0.25s ease; }
+  .panel.active { display: block; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* SECTION TITLE */
+  .sec-title { font-size: 0.6rem; font-family: var(--font-mono); letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+  .sec-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* CARDS */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; margin-bottom: 0.75rem; }
+
+  /* TASK ROWS */
+  .task-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.65rem 0;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.15s;
+    border-radius: 6px;
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+  }
+  .task-row:last-child { border-bottom: none; }
+  .task-row:active { background: rgba(255,255,255,0.04); }
+  .task-check {
+    width: 20px; height: 20px;
+    border: 2px solid var(--border);
+    border-radius: 5px;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem;
+    transition: all 0.2s;
+  }
+  .task-row.done .task-check { background: var(--accent3); border-color: var(--accent3); }
+  .task-row.done .task-label { text-decoration: line-through; color: var(--muted); }
+  .task-time { font-family: var(--font-mono); font-size: 0.68rem; color: var(--accent); width: 60px; flex-shrink: 0; }
+  .task-label { font-size: 0.82rem; font-weight: 600; }
+  .task-note { font-family: var(--font-mono); font-size: 0.62rem; color: var(--muted); margin-top: 1px; }
+  .task-xp { font-family: var(--font-mono); font-size: 0.6rem; color: var(--accent4); margin-left: auto; flex-shrink: 0; }
+  .task-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+  /* NOTE BOX */
+  .note-box { background: rgba(67,217,173,0.07); border: 1px solid rgba(67,217,173,0.2); border-radius: 8px; padding: 0.75rem; font-family: var(--font-mono); font-size: 0.68rem; color: var(--accent3); line-height: 1.6; margin-bottom: 0.75rem; }
+
+  /* CALC TABLE */
+  .calc-day { display: flex; gap: 0.75rem; align-items: flex-start; padding: 0.6rem 0.25rem; border-bottom: 1px solid var(--border); cursor: pointer; border-radius: 6px; transition: background 0.15s; }
+  .calc-day:last-child { border-bottom: none; }
+  .calc-day:active { background: rgba(255,255,255,0.04); }
+  .calc-check { width: 20px; height: 20px; border: 2px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; margin-top: 1px; transition: all 0.2s; }
+  .calc-day.done .calc-check { background: var(--accent3); border-color: var(--accent3); }
+  .calc-day.done .calc-tema { text-decoration: line-through; color: var(--muted); }
+  .calc-num { font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); width: 24px; flex-shrink: 0; padding-top: 2px; }
+  .calc-date { font-family: var(--font-mono); font-size: 0.65rem; color: var(--accent4); width: 68px; flex-shrink: 0; padding-top: 2px; }
+  .calc-tema { font-size: 0.8rem; font-weight: 600; line-height: 1.3; }
+  .calc-parcial { font-family: var(--font-mono); font-size: 0.58rem; color: var(--accent); margin-top: 2px; }
+  .calc-xp { font-family: var(--font-mono); font-size: 0.6rem; color: var(--accent4); margin-left: auto; flex-shrink: 0; padding-top: 2px; }
+  .repaso-row { background: rgba(124,106,255,0.08); border-radius: 6px; }
+
+  /* RL BARS */
+  .rl-row { margin-bottom: 0.85rem; }
+  .rl-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem; }
+  .rl-name { font-size: 0.85rem; font-weight: 700; }
+  .rl-time { font-family: var(--font-mono); font-size: 0.7rem; color: var(--accent3); }
+  .rl-bar-bg { height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+  .rl-bar-fill { height: 100%; border-radius: 3px; transition: width 0.8s cubic-bezier(.4,0,.2,1); }
+  .rl-desc { font-family: var(--font-mono); font-size: 0.62rem; color: var(--muted); margin-top: 0.3rem; }
+
+  /* SCHED */
+  .sched-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0; border-bottom: 1px solid var(--border); }
+  .sched-row:last-child { border-bottom: none; }
+  .sched-time { font-family: var(--font-mono); font-size: 0.68rem; color: var(--accent); width: 60px; flex-shrink: 0; }
+  .sched-label { font-size: 0.82rem; font-weight: 600; }
+  .sched-note { font-family: var(--font-mono); font-size: 0.62rem; color: var(--muted); margin-top: 1px; }
+  .sched-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+  /* BLENDER */
+  .project-card { background: var(--surface2); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 0.75rem; margin-bottom: 0.5rem; }
+  .project-card.c2 { border-left-color: var(--accent2); }
+  .project-card.c3 { border-left-color: var(--accent3); }
+  .project-card.c4 { border-left-color: var(--accent4); }
+  .project-title { font-size: 0.88rem; font-weight: 700; margin-bottom: 0.2rem; }
+  .project-days { font-family: var(--font-mono); font-size: 0.6rem; color: var(--muted); margin-bottom: 0.35rem; }
+  .project-desc { font-size: 0.78rem; color: #b0b0c0; line-height: 1.5; }
+  .project-skills { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.45rem; }
+  .skill-tag { background: rgba(255,255,255,0.06); border: 1px solid var(--border); border-radius: 4px; padding: 0.15rem 0.45rem; font-family: var(--font-mono); font-size: 0.58rem; color: var(--muted); }
+  .week-label { font-family: var(--font-mono); font-size: 0.6rem; color: var(--accent3); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.45rem; margin-top: 0.75rem; }
+
+  /* STATS */
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem; }
+  .stat-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 0.85rem; text-align: center; }
+  .stat-val { font-size: 1.6rem; font-weight: 800; color: var(--accent4); font-family: var(--font-mono); }
+  .stat-label { font-family: var(--font-mono); font-size: 0.6rem; color: var(--muted); margin-top: 0.25rem; }
+
+  /* RESET BTN */
+  .reset-btn { background: none; border: 1px solid var(--border); color: var(--muted); font-family: var(--font-mono); font-size: 0.65rem; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; display: block; margin: 0 auto; }
+  .reset-btn:hover { color: var(--accent2); border-color: var(--accent2); }
+
+  .footer { text-align: center; padding: 2rem 1.25rem; font-family: var(--font-mono); font-size: 0.6rem; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<!-- XP HEADER -->
+<div class="xp-header">
+  <div class="xp-top">
+    <div class="level-badge" id="levelBadge">Nivel 1</div>
+    <div class="xp-nums"><span id="xpCurrent">0</span> / <span id="xpNext">200</span> XP</div>
+    <div class="streak-chip">🔥 <span id="streakCount">0</span> días</div>
+  </div>
+  <div class="xp-bar-bg">
+    <div class="xp-bar-fill" id="xpBarFill" style="width:0%"></div>
+  </div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">// plan de vacaciones</div>
+  <h1>Vacaciones<br><span>Eru</span></h1>
+  <div class="hero-sub">23 días · 5 metas · <span id="totalXpDisplay" style="color:var(--accent4)">0</span> XP total</div>
+  <div class="dates-row">
+    <div class="date-chip">📅 16 abr → 8 may</div>
+    <div class="date-chip">🚌 viaje 9 may</div>
+    <div class="date-chip">🏫 clases 11 may</div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- TABS -->
+<div class="tab-bar">
+  <button class="tab active" onclick="switchTab('stats')">📊 Stats</button>
+  <button class="tab" onclick="switchTab('rutina')">Rutina</button>
+  <button class="tab" onclick="switchTab('calculo')">Cálculo</button>
+  <button class="tab" onclick="switchTab('rl')">RL</button>
+  <button class="tab" onclick="switchTab('blender')">Blender</button>
+</div>
+
+<!-- STATS -->
+<div class="panel active" id="panel-stats">
+  <div class="sec-title">Tu progreso</div>
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-val" id="statXp">0</div>
+      <div class="stat-label">XP TOTAL</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="statLevel">1</div>
+      <div class="stat-label">NIVEL</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="statStreak">0</div>
+      <div class="stat-label">RACHA (días)</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="statTasks">0</div>
+      <div class="stat-label">TAREAS DONE</div>
+    </div>
+  </div>
+
+  <div class="sec-title">Sistema de XP</div>
+  <div class="card">
+    <div class="sched-row"><div class="sched-dot" style="background:#43d9ad"></div><div><div class="sched-label">Tarea de rutina diaria</div><div class="sched-note">+10 XP por checkbox marcado</div></div></div>
+    <div class="sched-row"><div class="sched-dot" style="background:#7c6aff"></div><div><div class="sched-label">Tema de cálculo completado</div><div class="sched-note">+30 XP por día marcado</div></div></div>
+    <div class="sched-row"><div class="sched-dot" style="background:#ff6b6b"></div><div><div class="sched-label">Repaso de cálculo (D12)</div><div class="sched-note">+50 XP · es el más importante</div></div></div>
+    <div class="sched-row"><div class="sched-dot" style="background:#ffc94a"></div><div><div class="sched-label">Racha diaria activa</div><div class="sched-note">🔥 bonus +20 XP por cada día seguido</div></div></div>
+  </div>
+
+  <div class="sec-title">Niveles</div>
+  <div class="card">
+    <div class="sched-row"><div class="sched-time" style="color:var(--muted)">Nv 1</div><div><div class="sched-label">Estudiante en vacas</div><div class="sched-note">0 – 200 XP</div></div></div>
+    <div class="sched-row"><div class="sched-time" style="color:var(--accent3)">Nv 2</div><div><div class="sched-label">Constante</div><div class="sched-note">200 – 500 XP</div></div></div>
+    <div class="sched-row"><div class="sched-time" style="color:var(--accent)">Nv 3</div><div><div class="sched-label">Disciplinado</div><div class="sched-note">500 – 1000 XP</div></div></div>
+    <div class="sched-row"><div class="sched-time" style="color:var(--accent4)">Nv 4</div><div><div class="sched-label">Oro en serio</div><div class="sched-note">1000 – 1800 XP</div></div></div>
+    <div class="sched-row"><div class="sched-time" style="color:var(--accent2)">Nv 5</div><div><div class="sched-label">Eru el imparable</div><div class="sched-note">1800+ XP</div></div></div>
+  </div>
+
+  <button class="reset-btn" onclick="resetConfirm()">⚠️ resetear progreso</button>
+</div>
+
+<!-- RUTINA -->
+<div class="panel" id="panel-rutina">
+  <div class="note-box">⏰ El despertador suena a las 9am. Eso no significa que te levantás a las 9am.</div>
+  <div class="sec-title">Marcá lo que hiciste hoy</div>
+  <div class="card" id="tasksContainer">
+    <!-- tasks injected by JS -->
+  </div>
+</div>
+
+<!-- CÁLCULO -->
+<div class="panel" id="panel-calculo">
+  <div class="note-box">📌 Marcá cada tema cuando lo terminés. +30 XP por día.</div>
+  <div class="sec-title">Parcial I — Límites</div>
+  <div class="card" id="calcP1"></div>
+  <div class="sec-title">Parcial II — Derivadas</div>
+  <div class="card" id="calcP2"></div>
+  <div class="sec-title">Parcial III — Integrales</div>
+  <div class="card" id="calcP3"></div>
+</div>
+
+<!-- RL -->
+<div class="panel" id="panel-rl">
+  <div class="note-box">🚀 Oro 3 D2 en 1v1 · Platino 2 D2 en 2v2<br>60 min/día · de mayor a menor importancia</div>
+  <div class="sec-title">Distribución diaria</div>
+  <div class="card">
+    <div class="rl-row">
+      <div class="rl-header"><div><div class="rl-name">⚡ Speedflip</div><div class="rl-desc">Core de movilidad. Define tu techo mecánico.</div></div><div class="rl-time">15 min</div></div>
+      <div class="rl-bar-bg"><div class="rl-bar-fill" style="width:0%; background:#7c6aff" data-w="100%"></div></div>
+    </div>
+    <div class="rl-row">
+      <div class="rl-header"><div><div class="rl-name">🔄 Recoveries</div><div class="rl-desc">Wave dash, half flip, fast aerials. Más presencia en campo.</div></div><div class="rl-time">15 min</div></div>
+      <div class="rl-bar-bg"><div class="rl-bar-fill" style="width:0%; background:#43d9ad" data-w="100%"></div></div>
+    </div>
+    <div class="rl-row">
+      <div class="rl-header"><div><div class="rl-name">🛡️ Shadow defense</div><div class="rl-desc">En oro/plat la defensa gana más partidas que el ataque.</div></div><div class="rl-time">12 min</div></div>
+      <div class="rl-bar-bg"><div class="rl-bar-fill" style="width:0%; background:#ff6b6b" data-w="80%"></div></div>
+    </div>
+    <div class="rl-row">
+      <div class="rl-header"><div><div class="rl-name">💥 Powershots</div><div class="rl-desc">Tiros con fuerza y dirección. Para abrir defensas cerradas.</div></div><div class="rl-time">10 min</div></div>
+      <div class="rl-bar-bg"><div class="rl-bar-fill" style="width:0%; background:#ffc94a" data-w="67%"></div></div>
+    </div>
+    <div class="rl-row">
+      <div class="rl-header"><div><div class="rl-name">🏀 Dribble</div><div class="rl-desc">Necesario pero no urgente en tu rango aún.</div></div><div class="rl-time">8 min</div></div>
+      <div class="rl-bar-bg"><div class="rl-bar-fill" style="width:0%; background:#6b6b7e" data-w="53%"></div></div>
+    </div>
+  </div>
+  <div class="sec-title">Rotación semanal</div>
+  <div class="card">
+    <div class="sched-row"><div class="sched-dot" style="background:#7c6aff"></div><div class="sched-time">Sem 1</div><div><div class="sched-label">Speedflip consistente</div><div class="sched-note">izq y der, kickoffs, variaciones</div></div></div>
+    <div class="sched-row"><div class="sched-dot" style="background:#43d9ad"></div><div class="sched-time">Sem 2</div><div><div class="sched-label">Recoveries en cadena</div><div class="sched-note">wave dash → half flip en el mismo turno</div></div></div>
+    <div class="sched-row"><div class="sched-dot" style="background:#ff6b6b"></div><div class="sched-time">Sem 3</div><div><div class="sched-label">Defensa + dribble</div><div class="sched-note">tiros desde ángulos incómodos, carry básico</div></div></div>
+    <div class="sched-row"><div class="sched-dot" style="background:#ffc94a"></div><div class="sched-time">Sem 4</div><div><div class="sched-label">Partidas reales + análisis</div><div class="sched-note">aplicar todo, revisar replays</div></div></div>
+  </div>
+</div>
+
+<!-- BLENDER -->
+<div class="panel" id="panel-blender">
+  <div class="note-box">🎨 3 meses · Low poly + isométrico<br>Foco: escenas, modelado, luces, colores, animaciones</div>
+  <div class="week-label">Semana 1 · 17–20 abr</div>
+  <div class="project-card"><div class="project-title">🛋️ Cuarto cozy isométrico</div><div class="project-days">Días 1–4 · 2h/día</div><div class="project-desc">Cuarto de noche con cama, escritorio, lámparas, plantas y alfombra. Perspectiva isométrica. Colores cálidos. Cada día un bloque: muebles → decoración → luces → render final.</div><div class="project-skills"><span class="skill-tag">modelado low poly</span><span class="skill-tag">iluminación cálida</span><span class="skill-tag">composición</span><span class="skill-tag">point lights</span></div></div>
+  <div class="project-card c2"><div class="project-title">🎨 Experimento de paletas</div><div class="project-days">Días 5–6 · 2h/día</div><div class="project-desc">La misma escena del cuarto renderizada en 3 paletas: cálida, fría y monocromática. Sin modelar nada nuevo, solo materiales y luces. Entrena el ojo para colores.</div><div class="project-skills"><span class="skill-tag">materiales</span><span class="skill-tag">color theory</span><span class="skill-tag">HDRI</span></div></div>
+  <div class="week-label">Semana 2 · 21–27 abr</div>
+  <div class="project-card c3"><div class="project-title">🏝️ Isla flotante low poly</div><div class="project-days">Días 7–10 · 2h/día</div><div class="project-desc">Isla que flota en el cielo con árboles, roca base, casita o farolito, nubes. Clásico de portafolio 3D. D7-8 estructura, D9 vegetación, D10 iluminación y render.</div><div class="project-skills"><span class="skill-tag">formas orgánicas</span><span class="skill-tag">jerarquía</span><span class="skill-tag">iluminación ambiental</span><span class="skill-tag">cielo</span></div></div>
+  <div class="project-card c4"><div class="project-title">☕ Café de esquina</div><div class="project-days">Días 11–13 · 2h/día</div><div class="project-desc">Café visto desde afuera, isométrico. Sillas, mesitas, toldo rayado, plantas, letreros. Más objetos = más práctica de modelado rápido. Buen contenido para TikTok.</div><div class="project-skills"><span class="skill-tag">escenario exterior</span><span class="skill-tag">props variados</span><span class="skill-tag">luces neón</span></div></div>
+  <div class="week-label">Semana 3 · 28 abr – 4 may</div>
+  <div class="project-card"><div class="project-title">🌅 Animación: ciclo día/noche</div><div class="project-days">Días 14–16 · 2h/día</div><div class="project-desc">Animás la luz solar de una escena ya hecha para simular día→tarde→noche en loop de 5-8 seg. Introducción al Graph Editor y animar propiedades de luz. Perfecto para TikTok en loop.</div><div class="project-skills"><span class="skill-tag">keyframes</span><span class="skill-tag">graph editor</span><span class="skill-tag">animación de luces</span><span class="skill-tag">render video</span></div></div>
+  <div class="project-card c2"><div class="project-title">🌊 Loop: objeto flotando</div><div class="project-days">Días 17–18 · 2h/día</div><div class="project-desc">Un objeto flotando con movimiento suave up/down + pequeña rotación en loop. Lo más satisfactorio visualmente con el menor esfuerzo. Muy shareable.</div><div class="project-skills"><span class="skill-tag">ciclo de animación</span><span class="skill-tag">easing curves</span><span class="skill-tag">loopable</span></div></div>
+  <div class="week-label">Semana 4 · 5–8 may</div>
+  <div class="project-card c3"><div class="project-title">🏙️ Hero render de portafolio</div><div class="project-days">Días 19–22 · 2h/día</div><div class="project-desc">Tu mejor escena retocada con todo: buena iluminación, paleta deliberada, composición para thumbnail. D19-20 construir, D21 materiales finales, D22 render en alta y subir.</div><div class="project-skills"><span class="skill-tag">composición</span><span class="skill-tag">render final</span><span class="skill-tag">post-proceso</span><span class="skill-tag">portafolio</span><span class="skill-tag">TikTok</span></div></div>
+</div>
+
+<div class="footer">uasna · 2025 · tu progreso se guarda automáticamente</div>
+
+<script>
+const TASKS = [
+  { id:'mano', time:'10:00', label:'✍️ Escritura mano izquierda', note:'20 min', xp:10, dot:'#7c6aff' },
+  { id:'mecano', time:'10:20', label:'⌨️ Mecanografía', note:'20 min · keybr.com o monkeytype', xp:10, dot:'#7c6aff' },
+  { id:'blender', time:'10:40', label:'🎨 Blender', note:'2h · ver tab Blender', xp:10, dot:'#ff6b6b' },
+  { id:'calculo_session', time:'13:30', label:'📐 Cálculo 1', note:'2.5h · marcar tema en tab Cálculo', xp:10, dot:'#43d9ad' },
+  { id:'rl', time:'16:00', label:'🚀 Rocket League', note:'1h · distribución en tab RL', xp:10, dot:'#ff6b6b' },
+  { id:'repaso', time:'19:00', label:'🔁 Repaso cálculo', note:'30 min', xp:10, dot:'#43d9ad' },
+];
+
+const CALC_TEMAS = [
+  { id:'c1', num:'D1', date:'Jue 17 abr', tema:'Noción de límite de una función', parcial:'Parcial I', xp:30 },
+  { id:'c2', num:'D2', date:'Vie 18 abr', tema:'Definición formal de límite', parcial:'Parcial I', xp:30 },
+  { id:'c3', num:'D3', date:'Sáb 19 abr', tema:'Límites laterales', parcial:'Parcial I', xp:30 },
+  { id:'c4', num:'D4', date:'Dom 20 abr', tema:'Teoremas sobre límites de funciones', parcial:'Parcial I', xp:30 },
+  { id:'c5', num:'D5', date:'Lun 21 abr', tema:'Límites impropios: límites infinitos', parcial:'Parcial I', xp:30 },
+  { id:'c6', num:'D6', date:'Mar 22 abr', tema:'Límites en el infinito', parcial:'Parcial I', xp:30 },
+  { id:'c7', num:'D7', date:'Mié 23 abr', tema:'Asíntotas verticales y horizontales', parcial:'Parcial I', xp:30 },
+  { id:'c8', num:'D8', date:'Jue 24 abr', tema:'Asíntotas oblicuas', parcial:'Parcial I', xp:30 },
+  { id:'c9', num:'D9', date:'Vie 25 abr', tema:'Límites trigonométricos', parcial:'Parcial I', xp:30 },
+  { id:'c10', num:'D10', date:'Sáb 26 abr', tema:'Continuidad y discontinuidad en un punto', parcial:'Parcial I', xp:30 },
+  { id:'c11', num:'D11', date:'Dom 27 abr', tema:'Gráficas de funciones con condiciones en límites', parcial:'Parcial I', xp:30 },
+  { id:'c12', num:'D12', date:'Lun 28 abr', tema:'🔁 REPASO COMPLETO — Parcial I', parcial:'Repaso · resolver ejercicios', xp:50, repaso:true },
+  { id:'c13', num:'D13', date:'Mar 29 abr', tema:'Pendiente de recta tangente · Def. de la derivada', parcial:'Parcial II', xp:30 },
+  { id:'c14', num:'D14', date:'Mié 30 abr', tema:'Derivadas laterales · Diferenciabilidad y continuidad', parcial:'Parcial II', xp:30 },
+  { id:'c15', num:'D15', date:'Jue 1 may', tema:'Propiedades de la derivada · Teoremas básicos', parcial:'Parcial II', xp:30 },
+  { id:'c16', num:'D16', date:'Vie 2 may', tema:'Derivada de funciones trigonométricas', parcial:'Parcial II', xp:30 },
+  { id:'c17', num:'D17', date:'Sáb 3 may', tema:'Regla de la cadena · Derivada de funciones compuestas', parcial:'Parcial II', xp:30 },
+  { id:'c18', num:'D18', date:'Dom 4 may', tema:'Derivada de trig. inversas + logarítmica + exponencial', parcial:'Parcial II', xp:30 },
+  { id:'c19', num:'D19', date:'Lun 5 may', tema:'Derivación implícita · Derivadas de orden superior', parcial:'Parcial II', xp:30 },
+  { id:'c20', num:'D20', date:'Mar 6 may', tema:'Derivación logarítmica · Regla de L\'Hôpital', parcial:'Parcial II', xp:30 },
+  { id:'c21', num:'D21', date:'Mié 7 may', tema:'Análisis 1ra y 2da derivada · Gráficas', parcial:'Parcial II', xp:30 },
+  { id:'c22', num:'D22', date:'Jue 8 may', tema:'Repaso panorámico Parcial III', parcial:'Antiderivada · TFC · Áreas', xp:30 },
+];
+
+const LEVELS = [
+  { min:0, max:200, label:'Estudiante en vacas', num:1 },
+  { min:200, max:500, label:'Constante', num:2 },
+  { min:500, max:1000, label:'Disciplinado', num:3 },
+  { min:1000, max:1800, label:'Oro en serio', num:4 },
+  { min:1800, max:99999, label:'Eru el imparable', num:5 },
+];
+
+// State
+let state = JSON.parse(localStorage.getItem('eruVacaciones') || '{}');
+if(!state.tasks) state.tasks = {};
+if(!state.calc) state.calc = {};
+if(!state.totalXp) state.totalXp = 0;
+if(!state.streak) state.streak = 0;
+if(!state.lastDate) state.lastDate = '';
+if(!state.tasksDone) state.tasksDone = 0;
+
+function save() { localStorage.setItem('eruVacaciones', JSON.stringify(state)); }
+
+function getLevel(xp) { return LEVELS.find(l => xp >= l.min && xp < l.max) || LEVELS[LEVELS.length-1]; }
+
+function updateUI() {
+  const lv = getLevel(state.totalXp);
+  const pct = ((state.totalXp - lv.min) / (lv.max - lv.min)) * 100;
+  document.getElementById('levelBadge').textContent = 'Nivel ' + lv.num + ' · ' + lv.label;
+  document.getElementById('xpCurrent').textContent = state.totalXp;
+  document.getElementById('xpNext').textContent = lv.max === 99999 ? '∞' : lv.max;
+  document.getElementById('xpBarFill').style.width = Math.min(pct, 100) + '%';
+  document.getElementById('streakCount').textContent = state.streak;
+  document.getElementById('totalXpDisplay').textContent = state.totalXp;
+  document.getElementById('statXp').textContent = state.totalXp;
+  document.getElementById('statLevel').textContent = lv.num;
+  document.getElementById('statStreak').textContent = state.streak;
+  document.getElementById('statTasks').textContent = state.tasksDone;
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function checkStreak() {
+  const today = new Date().toDateString();
+  if(state.lastDate !== today) {
+    const yesterday = new Date(Date.now() - 86400000).toDateString();
+    if(state.lastDate === yesterday) {
+      state.streak++;
+      state.totalXp += 20;
+      showToast('🔥 Racha de ' + state.streak + ' días! +20 XP bonus');
+    } else if(state.lastDate !== '') {
+      state.streak = 1;
+    } else {
+      state.streak = 1;
+    }
+    state.lastDate = today;
+    save();
+  }
+}
+
+// Build tasks
+function buildTasks() {
+  const c = document.getElementById('tasksContainer');
+  c.innerHTML = '';
+  TASKS.forEach(t => {
+    const done = !!state.tasks[t.id];
+    const row = document.createElement('div');
+    row.className = 'task-row' + (done ? ' done' : '');
+    row.innerHTML = `
+      <div class="task-dot" style="background:${t.dot}"></div>
+      <div class="task-time">${t.time}</div>
+      <div style="flex:1">
+        <div class="task-label">${t.label}</div>
+        <div class="task-note">${t.note}</div>
+      </div>
+      <div class="task-xp">+${t.xp} XP</div>
+      <div class="task-check">${done ? '✓' : ''}</div>
+    `;
+    row.onclick = () => toggleTask(t.id, t.xp, row, t.label);
+    c.appendChild(row);
+  });
+}
+
+function toggleTask(id, xp, row, label) {
+  if(state.tasks[id]) {
+    state.tasks[id] = false;
+    state.totalXp = Math.max(0, state.totalXp - xp);
+    state.tasksDone = Math.max(0, state.tasksDone - 1);
+    row.classList.remove('done');
+    row.querySelector('.task-check').textContent = '';
+  } else {
+    state.tasks[id] = true;
+    state.totalXp += xp;
+    state.tasksDone++;
+    row.classList.add('done');
+    row.querySelector('.task-check').textContent = '✓';
+    showToast('✅ ' + label + ' · +' + xp + ' XP');
+  }
+  save(); updateUI();
+}
+
+// Build calc
+function buildCalc() {
+  const p1 = document.getElementById('calcP1');
+  const p2 = document.getElementById('calcP2');
+  const p3 = document.getElementById('calcP3');
+  p1.innerHTML = ''; p2.innerHTML = ''; p3.innerHTML = '';
+
+  CALC_TEMAS.forEach(t => {
+    const done = !!state.calc[t.id];
+    const row = document.createElement('div');
+    row.className = 'calc-day' + (done ? ' done' : '') + (t.repaso ? ' repaso-row' : '');
+    row.innerHTML = `
+      <div class="calc-check">${done ? '✓' : ''}</div>
+      <div class="calc-num">${t.num}</div>
+      <div class="calc-date">${t.date}</div>
+      <div style="flex:1">
+        <div class="calc-tema">${t.tema}</div>
+        <div class="calc-parcial">${t.parcial}</div>
+      </div>
+      <div class="calc-xp">+${t.xp}</div>
+    `;
+    row.onclick = () => toggleCalc(t.id, t.xp, row, t.num);
+    const idx = parseInt(t.id.replace('c',''));
+    if(idx <= 12) p1.appendChild(row);
+    else if(idx <= 21) p2.appendChild(row);
+    else p3.appendChild(row);
+  });
+}
+
+function toggleCalc(id, xp, row, num) {
+  if(state.calc[id]) {
+    state.calc[id] = false;
+    state.totalXp = Math.max(0, state.totalXp - xp);
+    state.tasksDone = Math.max(0, state.tasksDone - 1);
+    row.classList.remove('done');
+    row.querySelector('.calc-check').textContent = '';
+  } else {
+    state.calc[id] = true;
+    state.totalXp += xp;
+    state.tasksDone++;
+    row.classList.add('done');
+    row.querySelector('.calc-check').textContent = '✓';
+    showToast('📐 ' + num + ' completado · +' + xp + ' XP');
+  }
+  save(); updateUI();
+}
+
+function switchTab(id) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  event.target.classList.add('active');
+  if(id === 'rl') {
+    setTimeout(() => {
+      document.querySelectorAll('.rl-bar-fill').forEach(bar => {
+        const w = bar.dataset.w;
+        bar.style.width = '0';
+        requestAnimationFrame(() => { bar.style.width = w; });
+      });
+    }, 50);
+  }
+}
+
+function resetConfirm() {
+  if(confirm('¿Resetear todo tu progreso? Esto no se puede deshacer.')) {
+    localStorage.removeItem('eruVacaciones');
+    location.reload();
+  }
+}
+
+// Init
+checkStreak();
+buildTasks();
+buildCalc();
+updateUI();
+</script>
+</body>
+</html>
