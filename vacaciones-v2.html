@@ -462,15 +462,19 @@ function checkStreak() {
   const today = new Date().toDateString();
   if(state.lastDate !== today) {
     const yesterday = new Date(Date.now() - 86400000).toDateString();
-    // Resetear las tareas de rutina diaria
+    const allDone = TASKS.every(t => !!state.tasks[t.id]);
     state.tasks = {};
-    if(state.lastDate === yesterday) {
-      state.streak++;
-      state.totalXp += 20;
-      showToast('\uD83D\uDD25 Racha de ' + state.streak + ' días! +20 XP bonus');
+   if(state.lastDate === yesterday) {
+      if(allDone) {
+        state.streak++;
+        state.totalXp += 20;
+        showToast('🔥 Racha de ' + state.streak + ' días! +20 XP bonus');
+      } else {
+        state.streak = 1;
+        showToast('😅 Racha perdida — completá todas las tareas del día');
+      }
     } else if(state.lastDate !== '') {
       state.streak = 1;
-      showToast('\uD83D\uDE05 Racha perdida — nuevo día, a arrancar');
     } else {
       state.streak = 1;
     }
@@ -489,7 +493,6 @@ function buildTasks() {
     row.className = 'task-row' + (done ? ' done' : '');
     row.innerHTML = `
       <div class="task-dot" style="background:${t.dot}"></div>
-      <div class="task-time">${t.time}</div>
       <div style="flex:1">
         <div class="task-label">${t.label}</div>
         <div class="task-note">${t.note}</div>
