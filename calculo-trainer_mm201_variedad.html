@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cálculo Trainer · Eru</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [["\\(", "\\)"], ["$", "$"]],
+      displayMath: [["\\[", "\\]"], ["$$", "$$"]],
+      processEscapes: true
+    },
+    svg: { fontCache: "global" },
+    options: { skipHtmlTags: ["script", "noscript", "style", "textarea", "pre", "code"] }
+  };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<style>
+  :root {
+    --bg:#0a0a0f; --surface:#12121a; --surface2:#1a1a24; --border:#252532;
+    --accent:#43d9ad; --accent2:#ff6b6b; --accent3:#7c6aff; --accent4:#ffc94a;
+    --text:#e8e8f0; --muted:#5a5a70; --font-head:'Syne',sans-serif; --font-mono:'Space Mono',monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--text);font-family:var(--font-head);min-height:100vh}
+  .hero{padding:1.5rem 1.25rem 0}
+  .hero-tag{font-family:var(--font-mono);font-size:.6rem;color:var(--accent);letter-spacing:.15em;text-transform:uppercase;margin-bottom:.3rem}
+  .hero h1{font-size:1.7rem;font-weight:800;letter-spacing:-.03em}
+  .hero h1 span{color:var(--accent)}
+  .hero-sub{font-family:var(--font-mono);font-size:.65rem;color:var(--muted);margin-top:.3rem}
+  .panel{margin:1rem 1.25rem;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.85rem}
+  .label{font-family:var(--font-mono);font-size:.6rem;color:var(--muted);margin-bottom:.4rem;letter-spacing:.1em;text-transform:uppercase}
+  .row{display:flex;gap:.5rem;align-items:center}
+  .input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:.55rem .75rem;font-family:var(--font-mono);font-size:.7rem;color:var(--text);outline:none;min-width:0}
+  .input:focus{border-color:var(--accent)}
+  .btn{background:var(--accent);color:#000;font-family:var(--font-mono);font-size:.68rem;font-weight:700;border:none;border-radius:6px;padding:.58rem .85rem;cursor:pointer;white-space:nowrap}
+  .btn.secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+  .btn.danger{background:rgba(255,107,107,.08);color:var(--accent2);border:1px solid rgba(255,107,107,.35)}
+  .status{font-family:var(--font-mono);font-size:.6rem;margin-top:.4rem;line-height:1.5;color:var(--muted)}
+  .status.ok{color:var(--accent)}
+  .status.err{color:var(--accent2)}
+  .status.warn{color:var(--accent4)}
+  .main{padding:1rem 1.25rem 2rem}
+  .sec-title{font-size:.6rem;font-family:var(--font-mono);letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:.65rem;display:flex;align-items:center;gap:.5rem}
+  .sec-title:after{content:'';flex:1;height:1px;background:var(--border)}
+  .topic-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem;margin-bottom:1rem}
+  .topic-btn{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.7rem .4rem;text-align:center;cursor:pointer;transition:all .2s;font-family:var(--font-head);font-size:.75rem;font-weight:700;color:var(--muted)}
+  .topic-btn:hover{border-color:var(--accent);color:var(--text)}
+  .topic-btn.active{background:rgba(67,217,173,.1);border-color:var(--accent);color:var(--accent)}
+  .topic-emoji{font-size:1.2rem;display:block;margin-bottom:.3rem}
+  .curriculum-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.85rem;margin-bottom:1rem}
+  .curriculum-row{display:grid;grid-template-columns:1fr auto;gap:.75rem;align-items:end}
+  .select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:.65rem .75rem;font-family:var(--font-mono);font-size:.7rem;color:var(--text);outline:none}
+  .select:focus{border-color:var(--accent)}
+  .curriculum-meta{font-family:var(--font-mono);font-size:.65rem;color:var(--muted);line-height:1.55;margin-top:.7rem}
+  .curriculum-meta strong{color:var(--accent4)}
+  .source-note{font-family:var(--font-mono);font-size:.58rem;color:var(--muted);line-height:1.45;margin-top:.55rem;border-top:1px solid var(--border);padding-top:.55rem}
+  .diff-row{display:flex;gap:.5rem;margin-bottom:1rem}
+  .diff-btn{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.5rem;font-family:var(--font-mono);font-size:.65rem;color:var(--muted);cursor:pointer;text-align:center;transition:all .2s}
+  .diff-btn.active{color:var(--accent4);border-color:var(--accent4);background:rgba(255,201,74,.08)}
+  .method-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.85rem;margin-bottom:1rem;display:none}
+  .method-card.visible{display:block}
+  .method-row{display:flex;justify-content:space-between;gap:1rem;align-items:center}
+  .method-title{font-family:var(--font-mono);font-size:.68rem;color:var(--accent4);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.25rem}
+  .method-desc{font-family:var(--font-mono);font-size:.65rem;color:var(--muted);line-height:1.45}
+  .switch{position:relative;display:inline-block;width:54px;height:30px;flex:0 0 auto}
+  .switch input{opacity:0;width:0;height:0}
+  .slider{position:absolute;cursor:pointer;inset:0;background:var(--surface2);border:1px solid var(--border);transition:.2s;border-radius:999px}
+  .slider:before{position:absolute;content:"";height:22px;width:22px;left:3px;top:3px;background:var(--muted);transition:.2s;border-radius:50%}
+  .switch input:checked+.slider{border-color:var(--accent);background:rgba(67,217,173,.12)}
+  .switch input:checked+.slider:before{transform:translateX(24px);background:var(--accent)}
+  .gen-btn{width:100%;background:var(--accent);color:#000;font-family:var(--font-mono);font-size:.8rem;font-weight:700;border:none;border-radius:8px;padding:.85rem;cursor:pointer;letter-spacing:.05em;margin-bottom:1rem;transition:opacity .2s}
+  .gen-btn:disabled{opacity:.4;cursor:not-allowed}
+  .ex-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem;margin-bottom:.75rem;display:none}
+  .ex-card.visible{display:block}
+  .ex-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:.65rem}
+  .ex-badge{font-family:var(--font-mono);font-size:.6rem;padding:.2rem .55rem;border-radius:4px}
+  .ex-problema{font-size:1rem;font-weight:700;line-height:1.5;margin-bottom:.75rem;font-family:var(--font-mono);color:var(--accent4)}
+  .problem-prefix{font-family:var(--font-mono);font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.35rem}
+  .math-display{font-family:var(--font-head);font-size:1.15rem;color:var(--accent4);overflow-x:auto;padding:.15rem 0 .25rem}
+  .math-display mjx-container{margin:0!important;text-align:left!important;min-width:max-content}
+  .math-content mjx-container{overflow-x:auto;max-width:100%}
+  .feedback-body mjx-container,.hist-feedback mjx-container,.hist-problem mjx-container{overflow-x:auto;max-width:100%}
+  .feedback-body a,.hist-feedback a{color:var(--accent)}
+  .ex-hint{font-size:.75rem;color:var(--muted);line-height:1.5;font-family:var(--font-mono)}
+  .ans-label{font-family:var(--font-mono);font-size:.6rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.4rem}
+  .ans-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:.75rem;font-family:var(--font-mono);font-size:.85rem;color:var(--text);outline:none;resize:none;min-height:70px}
+  .ans-input:focus{border-color:var(--accent3)}
+  .check-btn{width:100%;background:var(--accent3);color:white;font-family:var(--font-mono);font-size:.78rem;font-weight:700;border:none;border-radius:8px;padding:.8rem;cursor:pointer;margin-top:.6rem;transition:opacity .2s;letter-spacing:.05em}
+  .check-btn:disabled{opacity:.4;cursor:not-allowed}
+  .feedback-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem;margin-top:.75rem;display:none}
+  .feedback-card.visible{display:block;animation:fadeUp .3s ease}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  .feedback-result{font-size:1rem;font-weight:800;margin-bottom:.75rem}
+  .feedback-result.correct{color:var(--accent)}
+  .feedback-result.wrong{color:var(--accent2)}
+  .feedback-result.partial{color:var(--accent4)}
+  .feedback-body{font-size:.8rem;line-height:1.7;color:#c0c0d0;white-space:pre-wrap;font-family:var(--font-mono)}
+  .loading{display:none;text-align:center;padding:2rem}
+  .loading.visible{display:block}
+  .spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto .75rem}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loading-text{font-family:var(--font-mono);font-size:.68rem;color:var(--muted)}
+  .score-row{display:flex;justify-content:space-between;margin-bottom:.5rem}
+  .score-stat{text-align:center}
+  .score-val{font-family:var(--font-mono);font-size:1.1rem;font-weight:700}
+  .score-label{font-family:var(--font-mono);font-size:.58rem;color:var(--muted)}
+  .score-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.85rem;margin-bottom:1rem}
+  .next-btn{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:var(--font-mono);font-size:.75rem;font-weight:700;border-radius:8px;padding:.75rem;cursor:pointer;margin-top:.6rem;transition:all .2s}
+  .next-btn:hover{border-color:var(--accent);color:var(--accent)}
+  .history-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem;margin-top:1rem}
+  .history-head{display:flex;justify-content:space-between;align-items:flex-start;gap:.75rem;margin-bottom:.7rem}
+  .history-title{font-family:var(--font-head);font-size:1rem;font-weight:800}
+  .history-actions{display:flex;gap:.5rem;flex-wrap:wrap;justify-content:flex-end}
+  .small-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:var(--font-mono);font-size:.62rem;font-weight:700;border-radius:7px;padding:.45rem .65rem;cursor:pointer}
+  .small-btn.danger{color:var(--accent2);border-color:rgba(255,107,107,.35);background:rgba(255,107,107,.06)}
+  .history-empty{font-family:var(--font-mono);font-size:.68rem;color:var(--muted);line-height:1.5}
+  .history-list{display:flex;flex-direction:column;gap:.65rem}
+  .hist-item{background:rgba(255,255,255,.018);border:1px solid var(--border);border-radius:9px;padding:.85rem}
+  .hist-meta{display:flex;justify-content:space-between;gap:.65rem;flex-wrap:wrap;font-family:var(--font-mono);font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem}
+  .hist-problem{font-family:var(--font-mono);font-size:.78rem;color:var(--accent4);line-height:1.45;margin-bottom:.6rem}
+  details.hist-details summary{cursor:pointer;color:var(--accent);font-family:var(--font-mono);font-size:.68rem;font-weight:700}
+  .hist-feedback{margin-top:.65rem;white-space:pre-wrap;font-family:var(--font-mono);font-size:.72rem;color:#c0c0d0;line-height:1.65}
+  .hist-answer{margin-top:.65rem;color:var(--muted);font-family:var(--font-mono);font-size:.68rem;line-height:1.5}
+
+  .timer-card{background:linear-gradient(135deg,rgba(18,18,26,.96),rgba(26,26,36,.9));border:1px solid var(--border);border-radius:16px;padding:1rem;margin-bottom:1rem;display:grid;grid-template-columns:160px 1fr;gap:1rem;align-items:center}
+  .timer-ring{width:140px;height:140px;border-radius:50%;background:conic-gradient(var(--accent) 0deg,rgba(67,217,173,.12) 0deg);display:flex;align-items:center;justify-content:center;position:relative;box-shadow:0 0 30px rgba(67,217,173,.08)}
+  .timer-ring:before{content:"";position:absolute;inset:10px;border-radius:50%;background:var(--surface);border:1px solid rgba(255,255,255,.05)}
+  .timer-inner{position:relative;text-align:center;z-index:1;padding:.4rem}
+  .timer-label{font-family:var(--font-mono);font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent4);font-weight:700}
+  .timer-time{font-family:var(--font-mono);font-size:1.35rem;font-weight:700;color:var(--text);line-height:1.1;margin-top:.2rem}
+  .timer-goal{font-family:var(--font-mono);font-size:.65rem;color:var(--muted);margin-top:.15rem}
+  .timer-meta{display:flex;flex-direction:column;gap:.65rem;min-width:0}
+  .timer-title{font-size:1.05rem;font-weight:800;letter-spacing:-.02em}
+  .timer-desc{font-family:var(--font-mono);font-size:.67rem;color:var(--muted);line-height:1.55}
+  .timer-controls{display:flex;gap:.5rem;flex-wrap:wrap}
+  .timer-pill{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:var(--font-mono);font-size:.64rem;font-weight:700;border-radius:999px;padding:.45rem .7rem;cursor:pointer}
+  .timer-pill.active{border-color:var(--accent);color:var(--accent);background:rgba(67,217,173,.08)}
+  .timer-pill.warn{border-color:rgba(255,201,74,.35);color:var(--accent4);background:rgba(255,201,74,.06)}
+  .timer-pill.danger{border-color:rgba(255,107,107,.35);color:var(--accent2);background:rgba(255,107,107,.06)}
+  .timer-status{font-family:var(--font-mono);font-size:.64rem;color:var(--muted);line-height:1.45}
+  .timer-status.ok{color:var(--accent)}.timer-status.warn{color:var(--accent4)}.timer-status.err{color:var(--accent2)}
+  @media(max-width:640px){
+    .hero h1{font-size:1.55rem}
+    .row{flex-direction:column;align-items:stretch}
+    .btn{width:100%}
+    .topic-grid{grid-template-columns:1fr}
+    .curriculum-row{grid-template-columns:1fr}
+    .diff-row{flex-direction:column}
+    .method-row{align-items:flex-start}
+    .history-head{flex-direction:column}
+    .history-actions{justify-content:flex-start}
+    .timer-card{grid-template-columns:1fr;justify-items:center;text-align:center}
+    .timer-controls{justify-content:center}
+    .timer-meta{align-items:center}
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-tag">// cálculo trainer</div>
+  <h1>Cálculo <span>AI</span></h1>
+  <div class="hero-sub">ejercicios random · corrección inteligente · procedimiento completo</div>
+</div>
+
+<div class="panel">
+  <div class="label">☁️ Sincronización Supabase</div>
+  <div id="cloudLoggedOut">
+    <div class="row">
+      <input type="email" class="input" id="cloudEmail" placeholder="tu-correo@gmail.com" autocomplete="email" />
+      <button class="btn secondary" onclick="sendMagicLink()">Enviar enlace mágico</button>
+    </div>
+    <div class="status" id="cloudStatus">Sin conexión. El historial se guardará localmente hasta iniciar sesión.</div>
+  </div>
+  <div id="cloudLoggedIn" style="display:none">
+    <div class="status ok" id="cloudUserLabel">Conectado.</div>
+    <div class="row" style="margin-top:.6rem">
+      <button class="btn secondary" onclick="loadCloudHistory()">Sincronizar ahora</button>
+      <button class="btn secondary" onclick="migrateLocalHistoryToCloud()">Subir historial local</button>
+      <button class="btn danger" onclick="signOutCloud()">Cerrar sesión</button>
+    </div>
+    <div class="status" id="cloudStatusIn">Historial sincronizado.</div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="label">🔑 API Key de Anthropic</div>
+  <div class="row">
+    <input type="password" class="input" id="apiKey" placeholder="sk-ant-..." />
+    <button class="btn" onclick="saveKey()">Guardar</button>
+  </div>
+  <div class="status" id="apiStatus"></div>
+</div>
+
+<div class="main">
+  <div class="sec-title">Sesión</div>
+  <div class="score-card">
+    <div class="score-row">
+      <div class="score-stat"><div class="score-val" id="scoreCorrect" style="color:var(--accent)">0</div><div class="score-label">CORRECTAS</div></div>
+      <div class="score-stat"><div class="score-val" id="scoreWrong" style="color:var(--accent2)">0</div><div class="score-label">INCORRECTAS</div></div>
+      <div class="score-stat"><div class="score-val" id="scoreTotal" style="color:var(--accent4)">0</div><div class="score-label">TOTAL</div></div>
+    </div>
+  </div>
+
+
+
+  <div class="sec-title">Tiempo de estudio</div>
+  <div class="timer-card">
+    <div class="timer-ring" id="timerRing">
+      <div class="timer-inner">
+        <div class="timer-label" id="timerLabel">Objetivo</div>
+        <div class="timer-time" id="timerTime">00:00:00</div>
+        <div class="timer-goal" id="timerGoal">/ 25:00</div>
+      </div>
+    </div>
+    <div class="timer-meta">
+      <div>
+        <div class="timer-title">Contador de estudio</div>
+        <div class="timer-desc">Cuenta el tiempo real con la página abierta. Al llegar al objetivo, te recomienda un descanso corto.</div>
+      </div>
+      <div class="timer-controls">
+        <button class="timer-pill" id="timerToggleBtn" onclick="toggleTimerRun()">Pausar</button>
+        <button class="timer-pill warn" onclick="startBreak()">Descanso 5m</button>
+        <button class="timer-pill danger" onclick="resetTimerSession()">Reiniciar</button>
+      </div>
+      <div class="timer-controls" aria-label="Objetivos de estudio">
+        <button class="timer-pill" id="goal25" onclick="setTimerTarget(25)">25 min</button>
+        <button class="timer-pill" id="goal50" onclick="setTimerTarget(50)">50 min</button>
+        <button class="timer-pill" id="goal90" onclick="setTimerTarget(90)">90 min</button>
+      </div>
+      <div class="timer-status" id="timerStatus">Sesión activa. Estudiá sin quemarte.</div>
+    </div>
+  </div>
+
+  <div class="sec-title">Plan MM201</div>
+  <div class="topic-grid" id="partialGrid">
+    <div class="topic-btn active" onclick="setPartial('parcial1',this)"><span class="topic-emoji">I</span>Parcial I</div>
+    <div class="topic-btn" onclick="setPartial('parcial2',this)"><span class="topic-emoji">II</span>Parcial II</div>
+    <div class="topic-btn" onclick="setPartial('parcial3',this)"><span class="topic-emoji">III</span>Parcial III</div>
+  </div>
+
+  <div class="curriculum-card">
+    <div class="curriculum-row">
+      <div>
+        <div class="label">Subtema según jornalización</div>
+        <select class="select" id="subtopicSelect" onchange="setSubtopic(this.value)"></select>
+      </div>
+      <button class="small-btn" onclick="useBalancedRandomSubtopic()">🎲 Aleatorio balanceado</button>
+    </div>
+    <div class="curriculum-meta" id="currentPlanText"></div>
+    <div class="source-note">Basado en la jornalización MM201 II-PAC 2026: límites y continuidad → derivadas → aplicaciones e integrales.</div>
+  </div>
+
+  <div class="method-card visible" id="lhopitalCard">
+    <div class="method-row">
+      <div>
+        <div class="method-title" id="methodTitle">Método de límites</div>
+        <div class="method-desc" id="methodDesc">L'Hôpital está desactivado para límites. Actívalo solo cuando tu curso ya lo permita.</div>
+      </div>
+      <label class="switch" title="Permitir ejercicios/resoluciones con L'Hôpital">
+        <input type="checkbox" id="lhopitalToggle" onchange="toggleLhopital()">
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <div class="sec-title">Dificultad</div>
+  <div class="diff-row">
+    <div class="diff-btn active" onclick="setDiff('basico',this)">Básico</div>
+    <div class="diff-btn" onclick="setDiff('intermedio',this)">Intermedio</div>
+    <div class="diff-btn" onclick="setDiff('avanzado',this)">Avanzado</div>
+  </div>
+
+  <button class="gen-btn" id="genBtn" onclick="generateExercise()">⚡ Generar ejercicio</button>
+
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <div class="loading-text">generando ejercicio...</div>
+  </div>
+
+  <div class="ex-card" id="exCard">
+    <div class="ex-top">
+      <span class="ex-badge" id="exBadge" style="background:rgba(67,217,173,0.1);color:var(--accent)"></span>
+      <span style="font-family:var(--font-mono);font-size:.6rem;color:var(--muted)" id="exDiff"></span>
+    </div>
+    <div class="ex-problema" id="exProblema"></div>
+    <div class="ex-hint" id="exHint"></div>
+  </div>
+
+  <div id="ansSection" style="display:none">
+    <div class="ans-label">Tu respuesta</div>
+    <textarea class="ans-input" id="ansInput" placeholder="Escribe tu respuesta aquí... (no necesita ser perfecta, escribe lo que puedas)"></textarea>
+    <button class="check-btn" id="checkBtn" onclick="checkAnswer()">🔍 Verificar respuesta</button>
+  </div>
+
+  <div class="loading" id="loadingCheck">
+    <div class="spinner"></div>
+    <div class="loading-text">analizando tu respuesta...</div>
+  </div>
+
+  <div class="feedback-card" id="feedbackCard">
+    <div class="feedback-result" id="feedbackResult"></div>
+    <div class="feedback-body" id="feedbackBody"></div>
+    <button class="next-btn" onclick="nextExercise()">➡️ Siguiente ejercicio</button>
+  </div>
+
+  <div class="history-card">
+    <div class="history-head">
+      <div>
+        <div class="history-title">Historial de ejercicios</div>
+        <div class="history-empty" id="historyModeText">Si estás conectado, se sincroniza entre laptop y celular.</div>
+      </div>
+      <div class="history-actions">
+        <button class="small-btn" onclick="renderHistory()">Actualizar</button>
+        <button class="small-btn danger" onclick="clearHistory()">Limpiar historial</button>
+      </div>
+    </div>
+    <div id="historyList"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = "https://zipzfyjevyycbueikvmc.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InppcHpmeWpldnl5Y2J1ZWlrdm1jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyMDAzNDAsImV4cCI6MjA5NDc3NjM0MH0.zmRo0OruBNRM-cvYcr-w4LjwnFJVPkcwIGi-qSnpjrI";
+
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
+});
+
+let partial = "parcial1";
+let subtopic = "auto";
+let topic = "limites";
+let diff = "basico";
+let currentExercise = "";
+let currentExerciseLatex = "";
+let currentExerciseText = "";
+let currentHint = "";
+let currentTechnique = "";
+let currentPlan = null;
+let allowLhopital = false;
+let score = { correct: 0, wrong: 0, total: 0 };
+let historyItems = [];
+let cloudUser = null;
+
+const HISTORY_KEY = "eruCalcHistory";
+const LHOPITAL_KEY = "eruAllowLhopital";
+const TIMER_KEY = "eruCalcStudyTimerV1";
+const MM201_RECENT_KEY = "eruCalcRecentMM201SubtopicsV1";
+
+const COURSE_UNITS = Object.freeze({
+  parcial1: {
+    label: "Parcial I",
+    short: "P1",
+    focus: "Límites, continuidad, asíntotas y lectura/construcción de gráficas desde condiciones de límite.",
+    topics: Object.freeze([
+      { id:"nocion_definicion_limite", area:"limites", label:"Noción y definición de límite", technique:"interpretación conceptual / tabla / gráfica", scope:"Trabaja noción intuitiva, definición informal y lectura de comportamiento cerca de un punto. No debe reducirse a racionalización." },
+      { id:"limites_laterales", area:"limites", label:"Límites laterales", technique:"comparar izquierda y derecha", scope:"Incluye funciones por partes, saltos y casos donde el límite bilateral existe o no existe." },
+      { id:"teoremas_limites", area:"limites", label:"Teoremas y propiedades de límites", technique:"álgebra de límites", scope:"Aplica suma, producto, cociente, potencias y composición; puede incluir sustitución directa razonada." },
+      { id:"algebraicos_factorizacion_racionalizacion", area:"limites", label:"Límites algebraicos: factorización/racionalización", technique:"factorización, cancelación o conjugado", scope:"Este es el único subtema donde se permite favorecer racionalización o factorización. No repetirlo si el modo es aleatorio." },
+      { id:"limites_infinitos", area:"limites", label:"Límites infinitos", technique:"comportamiento no acotado", scope:"Analiza límites que tienden a \(\pm\infty\), signos laterales y relación con asíntotas verticales." },
+      { id:"limites_infinito", area:"limites", label:"Límites en el infinito", technique:"dominancia de términos / grados", scope:"Incluye funciones racionales, radicales simples y comportamiento cuando \(x \to \pm\infty\)." },
+      { id:"asintotas_verticales_horizontales", area:"limites", label:"Asíntotas verticales y horizontales", technique:"límites laterales e infinitos", scope:"Pide encontrar o justificar asíntotas usando límites, no solo calcular una expresión aislada." },
+      { id:"asintotas_oblicuas", area:"limites", label:"Asíntotas oblicuas", technique:"división polinómica / comparación asintótica", scope:"Funciones racionales con diferencia de grados uno; pedir la recta oblicua y justificación." },
+      { id:"limites_trigonometricos", area:"limites", label:"Límites trigonométricos", technique:"límites notables trigonométricos", scope:"Usa \(\lim_{x\to0}\frac{\sin x}{x}=1\), \(1-\cos x\), identidades y cambios de variable simples." },
+      { id:"continuidad_discontinuidad", area:"limites", label:"Continuidad y discontinuidad en un punto", technique:"evaluar límite, valor y clasificación", scope:"Determina continuidad, remueve discontinuidades o clasifica salto, infinita o removible." },
+      { id:"graficas_condiciones_limites", area:"limites", label:"Construcción/lectura de gráficas con condiciones de límites", technique:"traducir condiciones a comportamiento gráfico", scope:"Genera ejercicios de interpretación: límites laterales, valor de función, asíntotas y continuidad a partir de condiciones." }
+    ])
+  },
+  parcial2: {
+    label: "Parcial II",
+    short: "P2",
+    focus: "Derivada, reglas de derivación, L’Hôpital y análisis de funciones con primera y segunda derivada.",
+    topics: Object.freeze([
+      { id:"derivada_definicion_tangente", area:"derivadas", label:"Pendiente de tangente y definición de derivada", technique:"cociente incremental", scope:"Usa definición \(f'(a)=\lim_{h\to0}\frac{f(a+h)-f(a)}{h}\), recta tangente y pendiente." },
+      { id:"derivadas_laterales_diferenciabilidad", area:"derivadas", label:"Derivadas laterales, diferenciabilidad y continuidad", technique:"derivadas por la izquierda/derecha", scope:"Funciones por partes, esquinas, cúspides y relación diferenciabilidad ⇒ continuidad." },
+      { id:"reglas_basicas_derivacion", area:"derivadas", label:"Propiedades y reglas básicas de derivación", technique:"linealidad, producto, cociente y potencia", scope:"Ejercicios de derivar y simplificar con reglas básicas." },
+      { id:"derivadas_trigonometricas", area:"derivadas", label:"Derivada de funciones trigonométricas", technique:"reglas trigonométricas", scope:"Deriva combinaciones de seno, coseno, tangente, secante, etc., con simplificación moderada." },
+      { id:"regla_cadena", area:"derivadas", label:"Regla de la cadena y funciones compuestas", technique:"cadena", scope:"Funciones compuestas polinómicas, radicales, trigonométricas, exponenciales o logarítmicas." },
+      { id:"trig_inversas", area:"derivadas", label:"Derivadas trigonométricas inversas", technique:"fórmulas de inversas trigonométricas", scope:"arcsin, arccos, arctan y composiciones simples." },
+      { id:"log_exp", area:"derivadas", label:"Derivadas logarítmicas y exponenciales", technique:"reglas de \(\ln x\), \(e^x\), \(a^x\)", scope:"Diferencia entre logaritmo natural, exponencial natural y bases generales." },
+      { id:"derivacion_implicita", area:"derivadas", label:"Derivación implícita", technique:"derivar ambos lados y despejar \(y'\)", scope:"Curvas implícitas, pendiente en un punto y recta tangente si aplica." },
+      { id:"orden_superior", area:"derivadas", label:"Derivadas de orden superior", technique:"segunda/tercera derivada", scope:"Calcular \(f''\), interpretar concavidad o aceleración en contexto simple." },
+      { id:"derivacion_logaritmica", area:"derivadas", label:"Derivación logarítmica", technique:"tomar logaritmos antes de derivar", scope:"Productos, cocientes, potencias variables o expresiones tipo \(x^x\)." },
+      { id:"regla_lhopital", area:"limites", label:"Regla de L’Hôpital", technique:"indeterminaciones y derivación numerador/denominador", scope:"Solo para indeterminaciones \(0/0\) o \(\infty/\infty\). Debe verificarse la forma indeterminada antes de aplicar." },
+      { id:"analisis_primera_segunda_derivada", area:"derivadas", label:"Gráficas: análisis de primera y segunda derivada", technique:"crecimiento, decrecimiento, concavidad e inflexión", scope:"Intervalos de crecimiento, extremos relativos, concavidad, puntos de inflexión y bosquejo razonado." }
+    ])
+  },
+  parcial3: {
+    label: "Parcial III",
+    short: "P3",
+    focus: "Aplicaciones de derivadas, antiderivadas, sustitución, integral definida, TFC y áreas entre curvas.",
+    topics: Object.freeze([
+      { id:"valores_extremos_tvm", area:"derivadas", label:"Valores extremos y Teorema del Valor Medio", technique:"puntos críticos y TVM", scope:"Extremos absolutos/relativos en intervalos, hipótesis del TVM y conclusión geométrica." },
+      { id:"optimizacion_aplicada", area:"derivadas", label:"Problemas aplicados de optimización", technique:"modelar, derivar y validar", scope:"Problemas verbales: área, volumen, costo, distancia o geometría. Deben incluir planteamiento." },
+      { id:"rectas_tangentes_normales", area:"derivadas", label:"Interpretación geométrica: tangentes y normales", technique:"pendiente derivada y pendiente recíproca negativa", scope:"Encontrar recta tangente y normal a una curva en un punto." },
+      { id:"antiderivadas_basicas", area:"integrales", label:"Definición de antiderivada", technique:"integración inmediata", scope:"Familias de antiderivadas con constante \(C\), potencias, trigonométricas y exponenciales básicas." },
+      { id:"teoremas_antiderivada", area:"integrales", label:"Teoremas sobre la antiderivada", technique:"linealidad y reglas básicas", scope:"Combinar reglas de antiderivación, verificar derivando y simplificar." },
+      { id:"sustitucion_variable", area:"integrales", label:"Sustitución de variable", technique:"cambio de variable \(u\)", scope:"Integrales indefinidas y definidas con función compuesta; debe mostrar elección de \(u\)." },
+      { id:"integral_definida", area:"integrales", label:"Integral definida: idea y definición", technique:"acumulación / área con signo", scope:"Interpretación, propiedades, evaluación básica y sentido geométrico de la integral definida." },
+      { id:"teorema_fundamental_calculo", area:"integrales", label:"Teorema Fundamental del Cálculo", technique:"evaluar con antiderivada o derivar función acumulada", scope:"Aplicar TFC parte I/II; incluye funciones acumuladas y evaluación en extremos." },
+      { id:"areas_entre_curvas", area:"integrales", label:"Área de regiones entre curvas", technique:"integrar superior menos inferior", scope:"Encontrar intersecciones, decidir función superior/inferior e integrar en \(x\) o \(y\)." },
+      { id:"areas_con_inversa", area:"integrales", label:"Área entre curvas usando inversa cuando sea necesario", technique:"reescribir en función de \(y\)", scope:"Regiones donde conviene despejar inversas o integrar respecto de \(y\)." }
+    ])
+  }
+});
+
+const AREA_BADGES = Object.freeze({ limites: "∞ Límites", derivadas: "d/dx Derivadas", integrales: "∫ Integrales" });
+
+
+
+let timerState = {
+  date: new Date().toDateString(),
+  mode: "focus",
+  running: true,
+  focusSeconds: 0,
+  breakSeconds: 0,
+  targetMinutes: 25,
+  breakMinutes: 5,
+  nextBreakAt: 25 * 60,
+  breaksTaken: 0,
+  lastTick: Date.now(),
+  lastMessage: "Sesión activa. Estudiá sin quemarte."
+};
+
+function loadTimerState() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(TIMER_KEY) || "null");
+    if (saved && typeof saved === "object") timerState = { ...timerState, ...saved };
+  } catch {}
+  const today = new Date().toDateString();
+  if (timerState.date !== today) {
+    timerState = { ...timerState, date: today, mode: "focus", running: true, focusSeconds: 0, breakSeconds: 0, nextBreakAt: (timerState.targetMinutes || 25) * 60, breaksTaken: 0, lastMessage: "Nuevo día. Contador reiniciado." };
+  }
+  timerState.lastTick = Date.now();
+  saveTimerState();
+}
+
+function saveTimerState() {
+  localStorage.setItem(TIMER_KEY, JSON.stringify({ ...timerState, lastTick: Date.now() }));
+}
+
+function formatTimer(totalSeconds) {
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = totalSeconds % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
+
+function renderTimer() {
+  const targetSeconds = Math.max(60, Number(timerState.targetMinutes || 25) * 60);
+  const breakTotal = Math.max(60, Number(timerState.breakMinutes || 5) * 60);
+  const isBreak = timerState.mode === "break";
+  const shownSeconds = isBreak ? Math.max(0, breakTotal - timerState.breakSeconds) : timerState.focusSeconds;
+  const progressBase = isBreak ? breakTotal : targetSeconds;
+  const progressValue = isBreak ? Math.min(1, timerState.breakSeconds / progressBase) : Math.min(1, (timerState.focusSeconds % targetSeconds) / progressBase);
+  const deg = Math.round(progressValue * 360);
+  const ringColor = isBreak ? "var(--accent4)" : "var(--accent)";
+
+  const ring = document.getElementById("timerRing");
+  if (ring) ring.style.background = `conic-gradient(${ringColor} ${deg}deg, rgba(255,255,255,.07) ${deg}deg)`;
+  document.getElementById("timerLabel").textContent = isBreak ? "Descanso" : "Objetivo diario";
+  document.getElementById("timerTime").textContent = formatTimer(shownSeconds);
+  document.getElementById("timerGoal").textContent = isBreak ? `/ ${String(timerState.breakMinutes).padStart(2,"0")}:00` : `/ ${String(timerState.targetMinutes).padStart(2,"0")}:00`;
+  document.getElementById("timerToggleBtn").textContent = timerState.running ? "Pausar" : "Reanudar";
+  document.getElementById("timerStatus").textContent = timerState.lastMessage || "Sesión activa.";
+  document.getElementById("timerStatus").className = "timer-status" + (isBreak ? " warn" : (timerState.focusSeconds >= timerState.nextBreakAt ? " warn" : " ok"));
+
+  [25,50,90].forEach(min => {
+    const btn = document.getElementById(`goal${min}`);
+    if (btn) btn.classList.toggle("active", Number(timerState.targetMinutes) === min);
+  });
+}
+
+function tickTimer() {
+  const now = Date.now();
+  const elapsed = Math.max(0, Math.floor((now - (timerState.lastTick || now)) / 1000));
+  timerState.lastTick = now;
+
+  if (timerState.running && document.visibilityState === "visible" && elapsed > 0) {
+    if (timerState.mode === "break") {
+      timerState.breakSeconds += elapsed;
+      const breakTotal = Math.max(60, Number(timerState.breakMinutes || 5) * 60);
+      if (timerState.breakSeconds >= breakTotal) {
+        timerState.mode = "focus";
+        timerState.breakSeconds = 0;
+        timerState.running = true;
+        timerState.nextBreakAt = timerState.focusSeconds + (Number(timerState.targetMinutes || 25) * 60);
+        timerState.lastMessage = "Descanso terminado. Volvé suave al ejercicio.";
+        try { navigator.vibrate?.([120, 80, 120]); } catch {}
+      } else {
+        timerState.lastMessage = "Descanso activo. Alejá la vista y soltá la muñeca.";
+      }
+    } else {
+      timerState.focusSeconds += elapsed;
+      if (timerState.focusSeconds >= timerState.nextBreakAt) {
+        timerState.lastMessage = "Descanso recomendado. Tomá 5 minutos antes de seguir.";
+        try { navigator.vibrate?.(120); } catch {}
+      } else {
+        const remaining = timerState.nextBreakAt - timerState.focusSeconds;
+        timerState.lastMessage = `Sesión activa. Próximo descanso en ${Math.max(1, Math.ceil(remaining / 60))} min.`;
+      }
+    }
+    saveTimerState();
+  }
+  renderTimer();
+}
+
+function toggleTimerRun() {
+  timerState.running = !timerState.running;
+  timerState.lastTick = Date.now();
+  timerState.lastMessage = timerState.running ? "Contador reanudado." : "Contador pausado.";
+  saveTimerState();
+  renderTimer();
+}
+
+function resetTimerSession() {
+  if (!confirm("¿Reiniciar el contador de estudio de hoy?")) return;
+  const targetMinutes = Number(timerState.targetMinutes || 25);
+  timerState = { ...timerState, date: new Date().toDateString(), mode: "focus", running: true, focusSeconds: 0, breakSeconds: 0, targetMinutes, breakMinutes: 5, nextBreakAt: targetMinutes * 60, breaksTaken: 0, lastTick: Date.now(), lastMessage: "Contador reiniciado." };
+  saveTimerState();
+  renderTimer();
+}
+
+function setTimerTarget(minutes) {
+  timerState.targetMinutes = minutes;
+  timerState.nextBreakAt = timerState.focusSeconds + (minutes * 60);
+  timerState.lastTick = Date.now();
+  timerState.lastMessage = `Objetivo cambiado a ${minutes} minutos.`;
+  saveTimerState();
+  renderTimer();
+}
+
+function startBreak() {
+  timerState.mode = "break";
+  timerState.running = true;
+  timerState.breakSeconds = 0;
+  timerState.breaksTaken = Number(timerState.breaksTaken || 0) + 1;
+  timerState.lastTick = Date.now();
+  timerState.lastMessage = "Descanso activo. 5 minutos para recuperar enfoque.";
+  saveTimerState();
+  renderTimer();
+}
+
+document.addEventListener("visibilitychange", () => {
+  timerState.lastTick = Date.now();
+  if (document.visibilityState === "visible") renderTimer();
+});
+setInterval(tickTimer, 1000);
+
+function saveKey() {
+  const key = document.getElementById("apiKey").value.trim();
+  if (!key.startsWith("sk-ant-")) {
+    document.getElementById("apiStatus").textContent = "❌ La key debe empezar con sk-ant-";
+    document.getElementById("apiStatus").className = "status err";
+    return;
+  }
+  localStorage.setItem("eruApiKey", key);
+  document.getElementById("apiStatus").textContent = "✅ Key guardada solo en este navegador";
+  document.getElementById("apiStatus").className = "status ok";
+}
+
+function getKey() { return localStorage.getItem("eruApiKey") || document.getElementById("apiKey").value.trim(); }
+function getUnit(partialId = partial) { return COURSE_UNITS[partialId] || COURSE_UNITS.parcial1; }
+function getTopicById(partialId, topicId) { return getUnit(partialId).topics.find(t => t.id === topicId) || null; }
+function getSelectedTopicPreview() {
+  const unit = getUnit();
+  if (subtopic !== "auto") return getTopicById(partial, subtopic) || unit.topics[0];
+  return null;
+}
+function getRecentSubtopics() {
+  try { const items = JSON.parse(localStorage.getItem(MM201_RECENT_KEY) || "[]"); return Array.isArray(items) ? items : []; } catch { return []; }
+}
+function rememberSubtopic(plan) {
+  const recent = getRecentSubtopics().filter(x => x && x.key !== `${plan.partial}:${plan.subtopic}`);
+  recent.unshift({ key: `${plan.partial}:${plan.subtopic}`, partial: plan.partial, subtopic: plan.subtopic, at: Date.now() });
+  localStorage.setItem(MM201_RECENT_KEY, JSON.stringify(recent.slice(0, 12)));
+}
+function chooseBalancedSubtopic() {
+  const unit = getUnit();
+  const recentKeys = new Set(getRecentSubtopics().slice(0, 5).map(x => x.key));
+  let pool = unit.topics.filter(t => !recentKeys.has(`${partial}:${t.id}`));
+  if (!pool.length) pool = [...unit.topics];
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+function buildPlan(chosenTopic) {
+  const unit = getUnit();
+  const t = chosenTopic || (subtopic === "auto" ? chooseBalancedSubtopic() : getTopicById(partial, subtopic)) || unit.topics[0];
+  topic = t.area;
+  return { partial, partialLabel: unit.label, partialShort: unit.short, focus: unit.focus, subtopic: t.id, subtopicLabel: t.label, area: t.area, technique: t.technique, scope: t.scope };
+}
+function populateSubtopics() {
+  const select = document.getElementById("subtopicSelect");
+  if (!select) return;
+  const unit = getUnit();
+  select.innerHTML = `<option value="auto">🎲 Aleatorio balanceado del ${unit.label}</option>` + unit.topics.map(t => `<option value="${escapeHtml(t.id)}">${escapeHtml(t.label)}</option>`).join("");
+  select.value = subtopic;
+  updateCurrentPlanPreview();
+}
+function updateCurrentPlanPreview(plan = null) {
+  const box = document.getElementById("currentPlanText");
+  if (!box) return;
+  const unit = getUnit();
+  const selected = plan || getSelectedTopicPreview();
+  if (!selected) {
+    box.innerHTML = `<strong>${escapeHtml(unit.label)}:</strong> modo aleatorio balanceado. El generador evitará repetir los últimos subtemas y cubrirá: ${escapeHtml(unit.focus)}`;
+  } else {
+    box.innerHTML = `<strong>${escapeHtml(unit.label)} · ${escapeHtml(selected.label || selected.subtopicLabel)}:</strong> ${escapeHtml(selected.scope || "")}`;
+  }
+}
+function setPartial(p, el) {
+  partial = p;
+  subtopic = "auto";
+  document.querySelectorAll("#partialGrid .topic-btn").forEach(b => b.classList.remove("active"));
+  if (el) el.classList.add("active");
+  populateSubtopics();
+  updateMethodCard();
+}
+function setSubtopic(value) {
+  subtopic = value || "auto";
+  const preview = getSelectedTopicPreview();
+  if (preview) topic = preview.area;
+  updateCurrentPlanPreview();
+  updateMethodCard();
+}
+function useBalancedRandomSubtopic() {
+  subtopic = "auto";
+  const select = document.getElementById("subtopicSelect");
+  if (select) select.value = "auto";
+  updateCurrentPlanPreview();
+  updateMethodCard();
+}
+function setDiff(d, el) { diff = d; document.querySelectorAll(".diff-btn").forEach(b => b.classList.remove("active")); el.classList.add("active"); }
+function updateScore() { document.getElementById("scoreCorrect").textContent = score.correct; document.getElementById("scoreWrong").textContent = score.wrong; document.getElementById("scoreTotal").textContent = score.total; }
+function updateMethodCard() {
+  const card = document.getElementById("lhopitalCard");
+  const toggle = document.getElementById("lhopitalToggle");
+  const title = document.getElementById("methodTitle");
+  const desc = document.getElementById("methodDesc");
+  const preview = getSelectedTopicPreview();
+  const isAuto = subtopic === "auto";
+  const isLimitRelated = (preview && preview.area === "limites") || (isAuto && partial !== "parcial3");
+  if (!card) return;
+  if (isLimitRelated) card.classList.add("visible"); else card.classList.remove("visible");
+  if (preview?.id === "regla_lhopital") {
+    if (title) title.textContent = "Método: L’Hôpital";
+    if (desc) desc.textContent = "Este subtema pertenece al Parcial II. El ejercicio debe verificar la indeterminación y aplicar L’Hôpital cuando corresponda.";
+    if (toggle) { toggle.checked = true; toggle.disabled = true; }
+  } else {
+    if (title) title.textContent = "Método de límites";
+    if (desc) desc.textContent = allowLhopital ? "L’Hôpital permitido solo si el subtema y la indeterminación lo justifican." : "L’Hôpital desactivado. En Parcial I se priorizan técnicas de límites, continuidad y asíntotas sin L’Hôpital.";
+    if (toggle) { toggle.checked = allowLhopital; toggle.disabled = false; }
+  }
+}
+function toggleLhopital() { allowLhopital = document.getElementById("lhopitalToggle").checked; localStorage.setItem(LHOPITAL_KEY, allowLhopital ? "1" : "0"); updateMethodCard(); }
+
+function getLocalHistory() { try { const items = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]"); return Array.isArray(items) ? items : []; } catch { return []; } }
+function saveLocalHistory(items) { localStorage.setItem(HISTORY_KEY, JSON.stringify(items.slice(0, 50))); }
+function localEntryToDb(entry, extended = false) {
+  const base = { topic: entry.topic || entry.area || "limites", difficulty: entry.diff || entry.difficulty || "basico", exercise: entry.exercise || "", answer: entry.answer || "", result: entry.result || "", feedback: entry.feedback || "", lhopital_allowed: !!entry.lhopital_allowed };
+  if (!extended) return base;
+  return { ...base, partial: entry.partial || "", subtopic: entry.subtopic || "", technique: entry.technique || "" };
+}
+function dbEntryToView(row) {
+  const topicInfo = row.partial && row.subtopic ? getTopicById(row.partial, row.subtopic) : null;
+  const unit = row.partial ? getUnit(row.partial) : null;
+  return { id: row.id, topic: row.topic, diff: row.difficulty, partial: row.partial || "", partialLabel: unit?.label || row.partial || "", subtopic: row.subtopic || "", subtopicLabel: topicInfo?.label || row.subtopic || "", technique: row.technique || topicInfo?.technique || "", exercise: row.exercise, answer: row.answer || "", result: row.result || "", feedback: row.feedback || "", lhopital_allowed: !!row.lhopital_allowed, date: row.created_at ? new Date(row.created_at).toLocaleString("es-ES") : "", cloud: true };
+}
+function isMissingExtendedHistoryColumn(error) {
+  const msg = String(error?.message || "").toLowerCase();
+  return ["partial", "subtopic", "technique"].some(col => msg.includes(col) && (msg.includes("column") || msg.includes("schema cache")));
+}
+async function insertHistoryEntries(entries) {
+  if (!cloudUser) return { error: new Error("No cloud user") };
+  const cleanEntries = entries.filter(e => e && (e.exercise || "").trim());
+  if (!cleanEntries.length) return { error: null };
+  const extendedRows = cleanEntries.map(e => ({ user_id: cloudUser.id, ...localEntryToDb(e, true) }));
+  let { error } = await supabaseClient.from("calculo_trainer_history").insert(extendedRows);
+  if (error && isMissingExtendedHistoryColumn(error)) {
+    const baseRows = cleanEntries.map(e => ({ user_id: cloudUser.id, ...localEntryToDb(e, false) }));
+    ({ error } = await supabaseClient.from("calculo_trainer_history").insert(baseRows));
+  }
+  return { error };
+}
+function historyMetaText(item) {
+  const parts = [item.result || "resultado"];
+  if (item.partialLabel) parts.push(item.partialLabel);
+  if (item.subtopicLabel) parts.push(item.subtopicLabel);
+  else if (item.topic) parts.push(item.topic);
+  if (item.diff) parts.push(item.diff);
+  if (item.technique) parts.push(item.technique);
+  if (item.lhopital_allowed) parts.push("L'Hôpital permitido");
+  return parts.filter(Boolean).join(" · ");
+}
+function escapeHtml(str = "") { return String(str).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;"); }
+function escapeRegExp(str = "") { return String(str).replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
+function extractField(text, label, nextLabels = []) {
+  const follow = nextLabels.length ? `(?=\\n\\s*(?:${nextLabels.map(escapeRegExp).join("|")})\\s*:|$)` : "(?=$)";
+  const regex = new RegExp(`${escapeRegExp(label)}\\s*:\\s*([\\s\\S]*?)${follow}`, "i");
+  const match = String(text || "").match(regex);
+  return match ? match[1].trim() : "";
+}
+function cleanLatex(raw = "") {
+  return String(raw)
+    .trim()
+    .replace(/^```(?:latex|tex)?/i, "")
+    .replace(/```$/i, "")
+    .replace(/^\\\[/, "")
+    .replace(/\\\]$/, "")
+    .replace(/^\$\$/, "")
+    .replace(/\$\$$/, "")
+    .replace(/^\$/, "")
+    .replace(/\$$/, "")
+    .trim();
+}
+function mathBlock(latex = "") {
+  const clean = cleanLatex(latex);
+  return clean ? `\\[${escapeHtml(clean)}\\]` : "";
+}
+function renderMathText(text = "") {
+  return escapeHtml(text || "");
+}
+function renderProblemHtml(latex = "", fallbackText = "") {
+  const clean = cleanLatex(latex);
+  if (clean) return `<div class="problem-prefix">Resolver</div><div class="math-display math-content">\\[${escapeHtml(clean)}\\]</div>`;
+  return `<div class="math-content">${renderMathText(fallbackText || "")}</div>`;
+}
+function typesetMath(root = document.body) {
+  const run = () => window.MathJax?.typesetPromise?.([root]).catch(err => console.warn("[MathJax]", err));
+  if (window.MathJax?.typesetPromise) run();
+  else setTimeout(run, 600);
+}
+
+async function initCloud() {
+  setCloudText("Revisando sesión...", "warn");
+  const { data } = await supabaseClient.auth.getSession();
+  cloudUser = data?.session?.user || null;
+  updateCloudUI();
+  if (cloudUser) await loadCloudHistory();
+  else { historyItems = getLocalHistory(); renderHistory(); setCloudText("Sin conexión. El historial se guardará localmente hasta iniciar sesión.", ""); }
+  supabaseClient.auth.onAuthStateChange(async (_event, session) => { cloudUser = session?.user || null; updateCloudUI(); if (cloudUser) await loadCloudHistory(); else { historyItems = getLocalHistory(); renderHistory(); setCloudText("Sesión cerrada. Usando historial local.", ""); } });
+}
+
+function updateCloudUI() {
+  const out = document.getElementById("cloudLoggedOut");
+  const inn = document.getElementById("cloudLoggedIn");
+  const historyMode = document.getElementById("historyModeText");
+  if (cloudUser) { out.style.display = "none"; inn.style.display = "block"; document.getElementById("cloudUserLabel").textContent = `Conectado como ${cloudUser.email}`; historyMode.textContent = "Historial sincronizado con Supabase entre laptop y celular."; }
+  else { out.style.display = "block"; inn.style.display = "none"; historyMode.textContent = "Modo local. Iniciá sesión para sincronizar entre dispositivos."; }
+}
+
+function setCloudText(msg, type = "") { const target = cloudUser ? document.getElementById("cloudStatusIn") : document.getElementById("cloudStatus"); if (!target) return; target.textContent = msg; target.className = "status" + (type ? " " + type : ""); }
+async function sendMagicLink() { const email = document.getElementById("cloudEmail").value.trim(); if (!email) { setCloudText("Escribí tu correo primero.", "err"); return; } setCloudText("Enviando enlace mágico...", "warn"); const { error } = await supabaseClient.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin + window.location.pathname } }); if (error) { setCloudText(error.message, "err"); return; } setCloudText("Enlace enviado. Abrilo en este mismo navegador.", "ok"); }
+async function signOutCloud() { await supabaseClient.auth.signOut(); cloudUser = null; updateCloudUI(); historyItems = getLocalHistory(); renderHistory(); }
+
+async function loadCloudHistory() {
+  if (!cloudUser) return;
+  setCloudText("Cargando historial de la nube...", "warn");
+  const { data, error } = await supabaseClient.from("calculo_trainer_history").select("*").eq("user_id", cloudUser.id).order("created_at", { ascending: false }).limit(50);
+  if (error) { console.warn("[Calc Cloud] load failed", error); setCloudText("No se pudo cargar el historial: " + error.message, "err"); return; }
+  historyItems = (data || []).map(dbEntryToView);
+  renderHistory();
+  setCloudText("Historial sincronizado.", "ok");
+}
+
+async function migrateLocalHistoryToCloud() {
+  if (!cloudUser) { setCloudText("Iniciá sesión primero.", "err"); return; }
+  const localItems = getLocalHistory();
+  if (!localItems.length) { setCloudText("No hay historial local para subir.", ""); return; }
+  if (!confirm(`Vas a subir ${localItems.length} ejercicios locales a Supabase. ¿Continuar?`)) return;
+  const validItems = localItems.filter(r => r.exercise);
+  if (!validItems.length) { setCloudText("No había ejercicios válidos para subir.", ""); return; }
+  const { error } = await insertHistoryEntries(validItems);
+  if (error) { setCloudText("No se pudo migrar: " + error.message, "err"); return; }
+  setCloudText("Historial local subido a la nube.", "ok");
+  await loadCloudHistory();
+}
+
+async function addToHistory(entry) {
+  if (cloudUser) {
+    const { error } = await insertHistoryEntries([entry]);
+    if (error) { console.warn("[Calc Cloud] insert failed", error); setCloudText("No se pudo guardar en la nube. Guardando local.", "err"); const local = getLocalHistory(); local.unshift(entry); saveLocalHistory(local); historyItems = local; renderHistory(); return; }
+    setCloudText("Ejercicio guardado en la nube.", "ok");
+    await loadCloudHistory();
+    return;
+  }
+  const local = getLocalHistory();
+  local.unshift(entry);
+  saveLocalHistory(local);
+  historyItems = local.slice(0, 50);
+  renderHistory();
+}
+
+function renderHistory() {
+  const box = document.getElementById("historyList");
+  if (!historyItems.length) {
+    box.innerHTML = '<div class="history-empty">Todavía no hay ejercicios guardados. Cuando verifiques una respuesta, aparecerá aquí.</div>';
+    return;
+  }
+  box.innerHTML = `<div class="history-list">${historyItems.map(item => `<div class="hist-item"><div class="hist-meta"><span>${escapeHtml(historyMetaText(item))}</span><span>${escapeHtml(item.date || "")}</span></div><div class="hist-problem math-content">${renderMathText(item.exercise || "")}</div><details class="hist-details"><summary>Ver solución / comentario</summary>${item.answer ? `<div class="hist-answer"><strong>Tu respuesta:</strong><br>${escapeHtml(item.answer)}</div>` : ""}<div class="hist-feedback math-content">${renderMathText(item.feedback || "")}</div></details></div>`).join("")}</div>`;
+  typesetMath(box);
+}
+
+async function clearHistory() {
+  if (!confirm("¿Seguro que querés borrar el historial de ejercicios?")) return;
+  if (cloudUser) { const { error } = await supabaseClient.from("calculo_trainer_history").delete().eq("user_id", cloudUser.id); if (error) { setCloudText("No se pudo limpiar la nube: " + error.message, "err"); return; } historyItems = []; renderHistory(); setCloudText("Historial de nube borrado.", "ok"); return; }
+  localStorage.removeItem(HISTORY_KEY);
+  historyItems = [];
+  renderHistory();
+}
+
+async function callClaude(prompt, onLoading, offLoading) {
+  const key = getKey();
+  if (!key) { alert("Primero guardá tu API key"); return null; }
+  onLoading();
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "Content-Type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" }, body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 1200, messages: [{ role: "user", content: prompt }] }) });
+    const data = await res.json();
+    offLoading();
+    if (data.error) { alert("Error: " + data.error.message); return null; }
+    return data.content[0].text;
+  } catch (e) { offLoading(); alert("Error de conexión: " + e.message); return null; }
+}
+
+function getLimitMethodRule(plan = currentPlan) {
+  if (!plan || plan.area !== "limites") return "No conviertas el ejercicio en un límite si el subtema seleccionado no es de límites.";
+  if (plan.subtopic === "regla_lhopital") return "Este subtema ES Regla de L’Hôpital. Debes generar una indeterminación 0/0 o ∞/∞, verificarla explícitamente y resolver aplicando L’Hôpital. No uses L’Hôpital sin comprobar la forma indeterminada.";
+  if (plan.partial === "parcial1") return "PROHIBIDO usar L’Hôpital. El Parcial I todavía trabaja límites con noción, definición, límites laterales, teoremas, impropios, asíntotas, trigonométricos, continuidad y gráficas. La solución tampoco debe mencionar L’Hôpital.";
+  if (allowLhopital) return "Puedes usar L’Hôpital solo si el subtema y la indeterminación lo justifican; si no, usa la técnica indicada por el subtema.";
+  return "L’Hôpital está desactivado. Resuelve con las técnicas específicas del subtema seleccionado.";
+}
+
+async function generateExercise() {
+  const plan = buildPlan();
+  currentPlan = plan;
+  currentTechnique = plan.technique;
+  rememberSubtopic(plan);
+  updateCurrentPlanPreview(plan);
+  updateMethodCard();
+
+  const methodRule = getLimitMethodRule(plan);
+  const recent = getRecentSubtopics().slice(0, 5).map(x => `${getUnit(x.partial)?.label || x.partial} / ${getTopicById(x.partial, x.subtopic)?.label || x.subtopic}`).join("; ") || "ninguno";
+  const prompt = `Eres un profesor de Cálculo I (MM201) para un estudiante universitario latinoamericano. Genera UN ejercicio alineado estrictamente con la jornalización MM201 II-PAC 2026.
+
+PLAN DEL CURSO:
+- Parcial I: noción y definición de límite, límites laterales, teoremas de límites, límites impropios, límites en el infinito, asíntotas verticales/horizontales/oblicuas, límites trigonométricos, continuidad/discontinuidad y construcción de gráficas con condiciones de límites.
+- Parcial II: derivada por definición, pendiente de recta tangente, derivadas laterales, diferenciabilidad, reglas de derivación, trigonométricas, cadena, trigonométricas inversas, logarítmica, exponencial, implícita, orden superior, logarítmica, L’Hôpital y análisis con primera/segunda derivada.
+- Parcial III: extremos, Teorema del Valor Medio, optimización, tangentes/normales, antiderivadas, sustitución, integral definida, Teorema Fundamental del Cálculo y áreas entre curvas.
+
+SELECCIÓN ACTUAL:
+- Parcial: ${plan.partialLabel}
+- Área matemática: ${AREA_BADGES[plan.area] || plan.area}
+- Subtema obligatorio: ${plan.subtopicLabel}
+- Técnica principal esperada: ${plan.technique}
+- Alcance exacto: ${plan.scope}
+- Dificultad: ${diff}
+- Subtemas recientes a evitar: ${recent}
+
+REGLA DE VARIEDAD:
+No generes otro ejercicio típico de racionalización/factorización salvo que el subtema obligatorio sea exactamente "Límites algebraicos: factorización/racionalización". Debes respetar el subtema seleccionado, aunque sea conceptual, gráfico, de continuidad, asíntotas, optimización o área.
+
+REGLA DE MÉTODO:
+${methodRule}
+
+REGLA DE DIFICULTAD:
+- Básico: un solo concepto central, números manejables, procedimiento corto.
+- Intermedio: combina 2 ideas del mismo subtema, requiere justificar.
+- Avanzado: más pasos, análisis de casos o interpretación, pero sin salirse del programa MM201.
+
+OBJETIVO DE FORMATO:
+El ejercicio debe verse como en papel. Usa LaTeX claro y limpio para la parte matemática. Si el ejercicio es de interpretación gráfica o condiciones de límites, escribe las condiciones en LaTeX y texto breve.
+
+FORMATO EXACTO (responde solo esto, sin markdown ni explicación extra):
+EJERCICIO_LATEX: [solo el enunciado matemático en LaTeX. No uses markdown ni comillas]
+EJERCICIO_TEXTO: [versión breve en texto normal para respaldo]
+SUBTEMA: ${plan.subtopicLabel}
+TECNICA: [técnica concreta que debería usar el estudiante]
+PISTA: [una pista corta de 1-2 líneas sobre qué técnica usar, sin dar la respuesta. Si incluyes fórmula, usa \( ... \)]
+
+Genera el ejercicio ahora:`;
+  const result = await callClaude(prompt, () => { document.getElementById("loading").classList.add("visible"); document.getElementById("genBtn").disabled = true; }, () => { document.getElementById("loading").classList.remove("visible"); document.getElementById("genBtn").disabled = false; });
+  if (!result) return;
+
+  const latexMatch = extractField(result, "EJERCICIO_LATEX", ["EJERCICIO_TEXTO", "SUBTEMA", "TECNICA", "PISTA"]);
+  const textoMatch = extractField(result, "EJERCICIO_TEXTO", ["SUBTEMA", "TECNICA", "PISTA"]);
+  const tecnicaMatch = extractField(result, "TECNICA", ["PISTA"]);
+  const pistaMatch = extractField(result, "PISTA", []);
+  const legacyExercise = extractField(result, "EJERCICIO", ["PISTA"]);
+
+  currentExerciseLatex = cleanLatex(latexMatch);
+  currentExerciseText = textoMatch || legacyExercise || result;
+  currentTechnique = tecnicaMatch || plan.technique;
+  currentExercise = currentExerciseLatex ? mathBlock(currentExerciseLatex) : currentExerciseText;
+  currentHint = pistaMatch || "";
+
+  document.getElementById("exBadge").textContent = `${plan.partialShort} · ${AREA_BADGES[plan.area] || plan.area}`;
+  document.getElementById("exDiff").textContent = `${diff.toUpperCase()} · ${plan.subtopicLabel}`;
+  document.getElementById("exProblema").innerHTML = renderProblemHtml(currentExerciseLatex, currentExerciseText);
+  document.getElementById("exHint").innerHTML = currentHint ? "💡 " + renderMathText(currentHint) : `💡 Técnica esperada: ${escapeHtml(currentTechnique)}`;
+  document.getElementById("exCard").classList.add("visible");
+  document.getElementById("ansSection").style.display = "block";
+  document.getElementById("ansInput").value = "";
+  document.getElementById("feedbackCard").classList.remove("visible");
+  typesetMath(document.getElementById("exCard"));
+}
+
+async function checkAnswer()async function checkAnswer() {
+  const answer = document.getElementById("ansInput").value.trim();
+  if (!answer) { alert("Escribe algo primero"); return; }
+  const plan = currentPlan || buildPlan();
+  const methodRule = getLimitMethodRule(plan);
+  const exerciseForPrompt = currentExerciseLatex ? `${currentExerciseText}
+LaTeX: ${currentExerciseLatex}` : currentExerciseText;
+  const prompt = `Eres un profesor de Cálculo I (MM201) amigable, preciso y paciente. El estudiante resolvió el siguiente ejercicio:
+
+PARCIAL: ${plan.partialLabel}
+SUBTEMA: ${plan.subtopicLabel}
+TÉCNICA ESPERADA: ${currentTechnique || plan.technique}
+EJERCICIO: ${exerciseForPrompt}
+RESPUESTA DEL ESTUDIANTE: ${answer}
+
+REGLA DE MÉTODO:
+${methodRule}
+
+Evalúa su respuesta siguiendo este formato exacto:
+
+RESULTADO: [CORRECTO / INCORRECTO / PARCIALMENTE CORRECTO]
+
+EVALUACIÓN: [2-3 oraciones evaluando qué hizo bien y qué está mal]
+
+PROCEDIMIENTO CORRECTO:
+[El procedimiento paso a paso completo y correcto, numerado, explicando cada paso como si fuera un profesor paciente. Cuando escribas operaciones o fórmulas, usa LaTeX con delimitadores \( ... \) para fórmulas cortas y \[ ... \] para líneas importantes.]
+
+CONSEJO: [Un consejo específico para que recuerde esta técnica en el futuro]`;
+  const result = await callClaude(prompt, () => { document.getElementById("loadingCheck").classList.add("visible"); document.getElementById("checkBtn").disabled = true; document.getElementById("ansSection").style.display = "none"; }, () => { document.getElementById("loadingCheck").classList.remove("visible"); document.getElementById("checkBtn").disabled = false; });
+  if (!result) { document.getElementById("ansSection").style.display = "block"; return; }
+  const resultMatch = result.match(/RESULTADO:\s*(.+)/i);
+  const resultText = (resultMatch ? resultMatch[1].trim().toUpperCase() : "").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const feedbackResult = document.getElementById("feedbackResult");
+  let resultLabel = "INCORRECTO";
+  if (resultText.includes("PARCIAL")) {
+    feedbackResult.textContent = "🟡 Parcialmente correcto";
+    feedbackResult.className = "feedback-result partial";
+    score.wrong++;
+    resultLabel = "PARCIAL";
+  } else if (resultText.includes("INCORRECTO")) {
+    feedbackResult.textContent = "❌ Incorrecto";
+    feedbackResult.className = "feedback-result wrong";
+    score.wrong++;
+    resultLabel = "INCORRECTO";
+  } else if (resultText.includes("CORRECTO")) {
+    feedbackResult.textContent = "✅ ¡Correcto!";
+    feedbackResult.className = "feedback-result correct";
+    score.correct++;
+    resultLabel = "CORRECTO";
+  } else {
+    feedbackResult.textContent = "❌ Incorrecto";
+    feedbackResult.className = "feedback-result wrong";
+    score.wrong++;
+  }
+  score.total++;
+  const bodyText = result.replace(/RESULTADO:.*\n?/i, "").trim();
+  const feedbackBody = document.getElementById("feedbackBody");
+  feedbackBody.innerHTML = renderMathText(bodyText);
+  document.getElementById("feedbackCard").classList.add("visible");
+  typesetMath(document.getElementById("feedbackCard"));
+  updateScore();
+  await addToHistory({ partial: plan.partial, partialLabel: plan.partialLabel, subtopic: plan.subtopic, subtopicLabel: plan.subtopicLabel, technique: currentTechnique || plan.technique, topic: plan.area, diff, exercise: currentExercise, answer, result: resultLabel, feedback: bodyText, lhopital_allowed: allowLhopital || plan.subtopic === "regla_lhopital", date: new Date().toLocaleString("es-ES") });
+}
+
+function nextExercise()function nextExercise() { document.getElementById("exCard").classList.remove("visible"); document.getElementById("ansSection").style.display = "none"; document.getElementById("feedbackCard").classList.remove("visible"); document.getElementById("ansInput").value = ""; currentExercise = ""; currentExerciseLatex = ""; currentExerciseText = ""; currentTechnique = ""; currentPlan = null; generateExercise(); }
+
+function boot() {
+  const savedKey = localStorage.getItem("eruApiKey");
+  if (savedKey) { document.getElementById("apiKey").value = savedKey; document.getElementById("apiStatus").textContent = "✅ Key cargada solo en este navegador"; document.getElementById("apiStatus").className = "status ok"; }
+  allowLhopital = localStorage.getItem(LHOPITAL_KEY) === "1";
+  document.getElementById("lhopitalToggle").checked = allowLhopital;
+  populateSubtopics();
+  updateMethodCard();
+  loadTimerState();
+  renderTimer();
+  initCloud();
+}
+
+boot();
+</script>
+</body>
+</html>
